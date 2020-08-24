@@ -1,0 +1,26 @@
+div.wrap > nav ul li i.fa.fa-sign-in-alt, div.wrap > nav ul li i.fa.fa-sign-in-alt a, div.wrap > nav ul li i.fa.fa-sign-out-alt, div.wrap > nav ul li i.fa.fa-sign-out-alt a, div.wrap > nav ul li i.fa.fa-sign-in-alt, div.wrap > nav ul li form button
+{
+	color: gray;
+}
+
+div.wrap > nav ul li i.fa.fa-sign-in-alt a
+{
+	text-decoration: none;
+	margin-left: 8px;
+}
+
+div.wrap > nav ul li form div.input-group-prepend
+{
+	margin-left: 4px;
+}
+
+div.wrap > nav ul li form#login-form
+{
+	display: none;
+}
+
+div.wrap > nav ul li form button:hover
+{
+	text-decoration: none;
+	color: gray;
+}

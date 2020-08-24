@@ -4,12 +4,19 @@ $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
 $config = [
-    'id' => 'basic',
+    'id' => 'blog',
     'basePath' => dirname(__DIR__),
+    'name' => 'Бе3печный блоггер',
+    'homeUrl' => '/blog/index',
+    'defaultRoute' => 'blog',
     'bootstrap' => ['log'],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
+    ],
+    'controllerMap' =>
+    [
+        //
     ],
     'components' => [
         'request' => [
@@ -20,11 +27,12 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => 'app\models\Users',
             'enableAutoLogin' => true,
+            'loginUrl' => '/blog/index',
         ],
         'errorHandler' => [
-            'errorAction' => 'site/error',
+            'errorAction' => 'blog/error',
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
@@ -42,15 +50,18 @@ $config = [
                 ],
             ],
         ],
+        'queue' =>
+        [
+            'class' => 'yii\queue\file\Queue',
+            'path' => '@runtime/queue',
+        ],
         'db' => $db,
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
             ],
         ],
-        */
     ],
     'params' => $params,
 ];
@@ -58,6 +69,7 @@ $config = [
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment
     $config['bootstrap'][] = 'debug';
+    $config['bootstrap'][] = 'queue';
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.

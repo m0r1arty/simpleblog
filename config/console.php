@@ -25,6 +25,10 @@ $config = [
                 ],
             ],
         ],
+        'queue' => [
+        	'class' => 'yii\queue\file\Queue',
+        	'path' => '@runtime/queue',
+        ],
         'db' => $db,
     ],
     'params' => $params,
@@ -42,7 +46,14 @@ if (YII_ENV_DEV) {
     $config['bootstrap'][] = 'gii';
     $config['modules']['gii'] = [
         'class' => 'yii\gii\Module',
+        'generators' =>
+        [
+        	'job' => [
+        		'class' => \yii\queue\gii\Generator::className(),
+        	]
+        ]
     ];
+    $config[ 'bootstrap' ][] = 'queue';
 }
 
 return $config;

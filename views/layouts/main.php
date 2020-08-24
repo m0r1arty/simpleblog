@@ -5,12 +5,17 @@
 
 use app\widgets\Alert;
 use yii\helpers\Html;
-use yii\bootstrap\Nav;
-use yii\bootstrap\NavBar;
+use yii\bootstrap4\Nav;
+use yii\bootstrap4\NavBar;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
 
 AppAsset::register($this);
+
+if ( Yii::$app->user->isGuest ) {
+    $loginForm = $this->render( '//layouts/_login-form', [ 'loginModel' => $this->params[ 'loginModel' ] ] );
+}
+
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -28,31 +33,45 @@ AppAsset::register($this);
 
 <div class="wrap">
     <?php
+
+    $strLoginItem = '';
+    if ( Yii::$app->user->isGuest ) {
+        $strLoginItem .= Html::beginTag( 'li' );
+        $strLoginItem .= Html::beginTag( 'i', [ 'class' => 'fa fa-sign-in-alt' ] );
+        $strLoginItem .= Html::a( 'Вход', '#', [ 'id' => 'blog-sign-in-id' ] );
+        $strLoginItem .= Html::endTag( 'i' );
+
+        $strLoginItem .= $loginForm;
+
+        $strLoginItem .= Html::endTag( 'li' );
+    }else{
+        $strLoginItem .= Html::beginTag( 'li' );
+        $strLoginItem .= Html::beginTag( 'div', [ 'class' => 'input-group' ] );
+
+        $strLoginItem .= Html::beginForm( '/blog/signout', 'post' );
+        
+        $strLoginItem .= Html::beginTag( 'i', [ 'class' => 'fa fa-sign-out-alt' ] );
+        $strLoginItem .= Html::endTag( 'i' );
+
+        $strLoginItem .= Html::submitButton( 'Выход', ['class' => 'btn btn-link logout'] );
+        $strLoginItem .= Html::endForm();
+
+        $strLoginItem .= Html::endTag( 'div' );
+        
+        $strLoginItem .= Html::endTag( 'li' );
+    }
+
     NavBar::begin([
         'brandLabel' => Yii::$app->name,
         'brandUrl' => Yii::$app->homeUrl,
         'options' => [
-            'class' => 'navbar-inverse navbar-fixed-top',
+            'class' => 'navbar navbar-expand-lg navbar-dark bg-dark',
         ],
     ]);
     echo Nav::widget([
-        'options' => ['class' => 'navbar-nav navbar-right'],
+        'options' => ['class' => 'navbar-nav mr-auto'],
         'items' => [
-            ['label' => 'Home', 'url' => ['/site/index']],
-            ['label' => 'About', 'url' => ['/site/about']],
-            ['label' => 'Contact', 'url' => ['/site/contact']],
-            Yii::$app->user->isGuest ? (
-                ['label' => 'Login', 'url' => ['/site/login']]
-            ) : (
-                '<li>'
-                . Html::beginForm(['/site/logout'], 'post')
-                . Html::submitButton(
-                    'Logout (' . Yii::$app->user->identity->username . ')',
-                    ['class' => 'btn btn-link logout']
-                )
-                . Html::endForm()
-                . '</li>'
-            )
+            $strLoginItem
         ],
     ]);
     NavBar::end();
@@ -69,8 +88,7 @@ AppAsset::register($this);
 
 <footer class="footer">
     <div class="container">
-        <p class="pull-left">&copy; My Company <?= date('Y') ?></p>
-
+        <p class="pull-left">&copy; M0r1 <?= date('Y') ?></p>
         <p class="pull-right"><?= Yii::powered() ?></p>
     </div>
 </footer>
