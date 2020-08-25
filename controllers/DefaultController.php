@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Файл содержит DefaultController, который является необходимой прокладкой
+ * к функционалу модуля blog.
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
+ */
+
 namespace app\controllers;
 
 use Yii;
@@ -7,6 +13,10 @@ use Yii;
 use yii\filters\AccessControl;
 use app\models\LoginForm;
 
+/**
+ * Класс DefaultController отвечает за авторизацию/деавторизацию пользователей, а так же отвечает за отображение ошибки.
+ * {@inheritdoc}
+ */
 class DefaultController extends \app\components\Controller
 {
    /**
@@ -45,12 +55,17 @@ class DefaultController extends \app\components\Controller
         ];
     }
 
+    /**
+     * Данный action отвечает за авторизацию пользователя в системе
+     * @return \yii\web\Response
+     */
 	public function actionSignin()
 	{
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
 
+        /* @var $model \app\models\LoginForm */
         $model = new LoginForm();
 
         $model->load( Yii::$app->request->post() ) && $model->login();
@@ -58,6 +73,10 @@ class DefaultController extends \app\components\Controller
         return $this->goBack();
 	}
 
+	/**
+	 * Данный action удаляет авторизацию пользователя
+	 * @return \yii\web\Response
+	 */
     public function actionSignout()
     {
         Yii::$app->user->logout();
