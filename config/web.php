@@ -7,8 +7,8 @@ $config = [
     'id' => 'blog',
     'basePath' => dirname(__DIR__),
     'name' => 'Бе3печный блоггер',
-    'homeUrl' => '/blog/index',
-    'defaultRoute' => 'blog',
+    'homeUrl' => '/',
+    'defaultRoute' => 'blog/blog/index',
     'bootstrap' => ['log'],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
@@ -17,6 +17,12 @@ $config = [
     'controllerMap' =>
     [
         //
+    ],
+    'modules' => [
+        'blog' => [
+            'class' =>'app\modules\blog\Module',
+            'useShortForm' => true,
+        ],
     ],
     'components' => [
         'request' => [
@@ -29,10 +35,10 @@ $config = [
         'user' => [
             'identityClass' => 'app\models\Users',
             'enableAutoLogin' => true,
-            'loginUrl' => '/blog/index',
+            'loginUrl' => '/',
         ],
         'errorHandler' => [
-            'errorAction' => 'blog/error',
+            'errorAction' => 'default/error',
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
@@ -66,10 +72,12 @@ $config = [
     'params' => $params,
 ];
 
+$config['bootstrap'][] = 'queue';
+$config['bootstrap'][] = 'blog';
+
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment
     $config['bootstrap'][] = 'debug';
-    $config['bootstrap'][] = 'queue';
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.

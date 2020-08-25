@@ -48,7 +48,7 @@ if ( Yii::$app->user->isGuest ) {
         $strLoginItem .= Html::beginTag( 'li' );
         $strLoginItem .= Html::beginTag( 'div', [ 'class' => 'input-group' ] );
 
-        $strLoginItem .= Html::beginForm( '/blog/signout', 'post' );
+        $strLoginItem .= Html::beginForm( '/default/signout', 'post' );
         
         $strLoginItem .= Html::beginTag( 'i', [ 'class' => 'fa fa-sign-out-alt' ] );
         $strLoginItem .= Html::endTag( 'i' );
