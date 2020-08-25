@@ -16,7 +16,7 @@ echo '<div class="input-group input-group-sm">';
 /**
 	'tag' => false чтобы yii\widgets\ActiveField не генерировал div враппер, который ломает отображение input-group-sm
 */
-echo $form->field( $loginModel, 'login', [
+echo $form->field( $loginModel, 'username', [
 	'inputTemplate' => '<div class="input-group-prepend"><span class="input-group-text">Login</span></div>{input}',
 	'inputOptions' =>
 	[

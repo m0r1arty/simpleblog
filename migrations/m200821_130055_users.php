@@ -16,11 +16,10 @@ class m200821_130055_users extends Migration
             $tableOptions = null;
 
             $this->createTable( '{{%users}}',[
-                'id' => $this->integer()->unsigned(),
+                'id' => $this->bigPrimaryKey(),
                 'login' => $this->string( 20 )->notNull()->defaultValue( "" ),
                 'password' => $this->string( 32 )->notNull()->defaultValue( "" ),
                 'token' => $this->string( 64 )->notNull()->defaultValue( "" ),
-                'PRIMARY KEY ([[id]])',
             ], $tableOptions );
 
             $this->createIndex( 'idx-users-login', '{{%users}}', 'login' );

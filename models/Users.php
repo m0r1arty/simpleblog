@@ -28,6 +28,7 @@ class Users extends BaseUsers
     public function rules()
     {
         return [
+            [['id'], 'integer'],
             [['login'], 'string', 'max' => 20],
             [['password'], 'string', 'max' => 32],
             [['token'], 'string', 'max' => 64],
