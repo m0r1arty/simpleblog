@@ -65,6 +65,43 @@ div.content.footer i.fa-user, div.record.preview.footer i.fa-user
 }
 
 /*
+Пагинация
+*/
+
+div.grid-view ul.pagination li
+{
+	margin-left: 2px;
+	margin-right: 3px;
+}
+
+div.grid-view ul.pagination li a, div.grid-view ul.pagination li a:visited
+{
+	color: gray;
+}
+
+div.grid-view ul.pagination li.prev a:hover, div.grid-view ul.pagination li.next a:hover
+{
+	background-color: gray;
+	color: white;
+	font-weight: bold;
+}
+
+div.grid-view ul.pagination li.prev span, div.grid-view ul.pagination li.next span
+{
+	color: #c3c3c3;
+}
+
+div.grid-view ul.pagination li.active a, div.grid-view ul.pagination li.active a:visited, div.grid-view ul.pagination li.active span
+{
+	color: white;
+	font-weight: bold;
+	font-size: 1.1em;
+	text-decoration: none;
+	background-color: gray;
+	padding: 0px 3px;
+}
+
+/*
 Следующие 4 правила чинят отображение иконок view/edit/delete в GridView
 @see https://github.com/yiisoft/yii2/issues/17479#issuecomment-612597744
 */

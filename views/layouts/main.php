@@ -79,7 +79,7 @@ if ( Yii::$app->user->isGuest ) {
         array_unshift( $items,
         [ 'label' => 'Контент', 'url' => '#', 'items' => [
             [ 'label' => 'Записи', 'url' => Url::to( [ '/blog/blog/list' ] ) ],
-            [ 'label' => 'Категории', 'url' => Url::to( [ '/blog/categories/list' ] ) ],
+            [ 'label' => 'Категории', 'url' => Url::to( [ '/blog/categories/index' ] ) ],
             ],
         ]);
     }

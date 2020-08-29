@@ -64,9 +64,9 @@ class Categories extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'category_id' => 'Category ID',
-            'title' => 'Title',
-            'slug' => 'Slug',
+            'category_id' => 'ID',
+            'title' => 'Название',
+            'slug' => 'slug',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
