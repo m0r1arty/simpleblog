@@ -1,9 +1,20 @@
 <?php
 
+/**
+ * Файл содержит базовый класс для модели пользователей, реализующий интерфейс IdentityInterface.
+ */
+
 namespace app\models;
 
+/**
+ * BaseUsers реализует интерфейс \yii\web\IdentityInterface и расширяет \yii\db\ActiveRecord для работы с пользователями из БД.
+ * Конкретика по таблице и полям отдана производным классам.
+ */
 class BaseUsers extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 {
+    /**
+     * string $authKey
+     */
 	public $authKey;
     /**
      * {@inheritdoc}
@@ -67,7 +78,9 @@ class BaseUsers extends \yii\db\ActiveRecord implements \yii\web\IdentityInterfa
         return $this->password === md5( $password );
     }
 
-
+    /**
+     * {@inheritdoc}
+     */
     public function beforeSave( $insert )
     {
         if( parent::beforeSave( $insert ) )

@@ -20,8 +20,8 @@ use app\models\LoginForm;
 class DefaultController extends \app\components\Controller
 {
    /**
-     * {@inheritdoc}
-     */
+    * {@inheritdoc}
+    */
     public function behaviors()
     {
         return [
@@ -29,12 +29,12 @@ class DefaultController extends \app\components\Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => [ 'index', 'signout' ],
+                        'actions' => [ 'index', 'signout', 'error' ],
                         'allow' => true,
                         'roles' => [ '@' ],
                     ],
                     [
-                    	'actions' => [ 'index', 'signin' ],
+                    	'actions' => [ 'index', 'signin', 'error' ],
                     	'allow' => true,
                     	'roles' => [ '?' ],
                     ],

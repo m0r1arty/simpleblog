@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Файл содержит реализацию модели для таблицы пользователей.
+ * @see \app\models\BaseUsers
+ */
 namespace app\models;
 
 use Yii;

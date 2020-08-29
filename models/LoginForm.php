@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Файл содержит форму для авторизации на сайте.
+ */
 namespace app\models;
 
 use Yii;
@@ -8,7 +11,7 @@ use yii\base\Model;
 /**
  * LoginForm is the model behind the login form.
  *
- * @property User|null $user This property is read-only.
+ * @property Users|null $user This property is read-only.
  *
  */
 class LoginForm extends Model
@@ -66,7 +69,7 @@ class LoginForm extends Model
     /**
      * Finds user by [[login]]
      *
-     * @return User|null
+     * @return Users|null
      */
     public function getUser()
     {

@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\bootstrap\ActiveForm;
 
 $form = ActiveForm::begin([
-	'action' => [ '/default/signin' ],
+	'action' => [ \yii\helpers\Url::to( [ '/default/signin' ] ) ],
 	'id' => 'login-form',
 	'layout' => 'inline',
 	'fieldConfig' => [

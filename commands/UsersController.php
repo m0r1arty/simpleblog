@@ -1,8 +1,9 @@
 <?php
 
 /**
-  *
-  */
+ * Файл содержит консольную команду users, которая на данный момент содержит всего одну sub-команду create
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
+ */
 
 namespace app\commands;
 
@@ -11,8 +12,8 @@ use yii\console\ExitCode;
 use app\models\Users;
 
 /**
-  *
-  */
+ * Класс предназначен для управления пользователями. В данный момент поддерживает только команду создания пользователя.
+ */
 class UsersController extends Controller
 {
    /**
@@ -21,7 +22,9 @@ class UsersController extends Controller
      * @param string $password Пароль(не обязательно)
      * @return int Exit code
      */
-    public function actionCreate( $username, $password = "" ) {
+    public function actionCreate( $username, $password = "" )
+    {
+        /* @var \app\models\Users $model */
         $model = Users::findByUsername( $username );
 
         if (!is_null($model)) {
@@ -43,7 +46,7 @@ class UsersController extends Controller
 
         if ($model->save()) {
         	return ExitCode::OK;
-        }else{
+        } else {
         	return ExitCode::OSERR;
         }
     }

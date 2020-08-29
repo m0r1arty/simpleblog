@@ -21,7 +21,6 @@ $config = [
     'modules' => [
         'blog' => [
             'class' =>'app\modules\blog\Module',
-            'useShortForm' => true,
         ],
     ],
     'components' => [
@@ -39,6 +38,7 @@ $config = [
         ],
         'errorHandler' => [
             'errorAction' => 'default/error',
+            'errorView' => '//default/error',
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
@@ -66,6 +66,11 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                [ 'pattern' => 'signout', 'route' => 'default/signout' ],
+                [ 'pattern' => 'signin', 'route' => 'default/signin' ],
+                [ 'pattern' => 'blog', 'route' => 'blog/blog/index' ],
+                [ 'pattern' => 'blog/<action:[\w\-]+>', 'route' => 'blog/blog/<action>' ],
+                [ 'pattern' => 'categories/<action:[\w\-]+>', 'route' => 'blog/categories/<action>' ],
             ],
         ],
     ],

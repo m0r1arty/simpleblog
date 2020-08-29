@@ -24,3 +24,62 @@ div.wrap > nav ul li form button:hover
 	text-decoration: none;
 	color: gray;
 }
+
+ol.breadcrumb li.middle
+{
+	margin-left: 4px;
+	margin-right: 4px;
+}
+
+div.content.footer
+{
+	background-color: #ffffff;
+}
+
+div.content + div.content.footer, div.record.preview.footer.right
+{
+	float: right;
+	height: auto;
+	border: 0;
+	padding: 0;
+}
+
+div.record.preview.footer.left
+{
+	float: left;
+	height: auto;
+	border: 0;
+	padding: 0;
+	background-color: white;
+}
+
+div.content.footer span, div.record.preview.footer span
+{
+	margin-left: 8px;
+	font-size: 0.9em;
+}
+
+div.content.footer i.fa-user, div.record.preview.footer i.fa-user
+{
+	margin-left: 10px;
+}
+
+/*
+Следующие 4 правила чинят отображение иконок view/edit/delete в GridView
+@see https://github.com/yiisoft/yii2/issues/17479#issuecomment-612597744
+*/
+.glyphicon {
+    font-family: "Font Awesome 5 Free";
+}
+.glyphicon-eye-open:before {
+    content: "\f06e";
+    color: var(--success);
+}
+.glyphicon-pencil:before {
+    content: "\f044";
+    color: var(--primary);
+}
+.glyphicon-trash:before {
+    content: "\f2ed";
+    color: var(--danger);
+}

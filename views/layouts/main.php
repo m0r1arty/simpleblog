@@ -5,17 +5,19 @@
 
 use app\widgets\Alert;
 use yii\helpers\Html;
+use \yii\helpers\Url;
 use yii\bootstrap4\Nav;
 use yii\bootstrap4\NavBar;
-use yii\widgets\Breadcrumbs;
+use yii\bootstrap4\Breadcrumbs;
 use app\assets\AppAsset;
 
 AppAsset::register($this);
 
 if ( Yii::$app->user->isGuest ) {
-    $loginForm = $this->render( '//layouts/_login-form', [ 'loginModel' => $this->params[ 'loginModel' ] ] );
-}
+    $loginModel = new \app\models\LoginForm();
 
+    $loginForm = $this->render( '//layouts/_login-form', [ 'loginModel' => $loginModel ] );
+}
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -44,11 +46,11 @@ if ( Yii::$app->user->isGuest ) {
         $strLoginItem .= $loginForm;
 
         $strLoginItem .= Html::endTag( 'li' );
-    }else{
+    } else {
         $strLoginItem .= Html::beginTag( 'li' );
         $strLoginItem .= Html::beginTag( 'div', [ 'class' => 'input-group' ] );
 
-        $strLoginItem .= Html::beginForm( '/default/signout', 'post' );
+        $strLoginItem .= Html::beginForm( Url::to( [ '/default/signout' ] ), 'post' );
         
         $strLoginItem .= Html::beginTag( 'i', [ 'class' => 'fa fa-sign-out-alt' ] );
         $strLoginItem .= Html::endTag( 'i' );
@@ -68,17 +70,31 @@ if ( Yii::$app->user->isGuest ) {
             'class' => 'navbar navbar-expand-lg navbar-dark bg-dark',
         ],
     ]);
+
+    $items = [
+        $strLoginItem,
+    ];
+
+    if ( !Yii::$app->user->isGuest ) {
+        array_unshift( $items,
+        [ 'label' => 'Контент', 'url' => '#', 'items' => [
+            [ 'label' => 'Записи', 'url' => Url::to( [ '/blog/blog/list' ] ) ],
+            [ 'label' => 'Категории', 'url' => Url::to( [ '/blog/categories/list' ] ) ],
+            ],
+        ]);
+    }
+
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav mr-auto'],
-        'items' => [
-            $strLoginItem
-        ],
+        'items' => $items,
     ]);
     NavBar::end();
     ?>
 
     <div class="container">
         <?= Breadcrumbs::widget([
+            'homeLink' => false,
+            'itemTemplate' => '<li>{link}</li><li class="middle">::</li>',
             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
         ]) ?>
         <?= Alert::widget() ?>
