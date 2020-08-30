@@ -68,30 +68,35 @@ div.content.footer i.fa-user, div.record.preview.footer i.fa-user
 Пагинация
 */
 
-div.grid-view ul.pagination li
+ul.pagination
+{
+	clear: both;
+}
+
+ul.pagination li
 {
 	margin-left: 2px;
 	margin-right: 3px;
 }
 
-div.grid-view ul.pagination li a, div.grid-view ul.pagination li a:visited
+ul.pagination li a, ul.pagination li a:visited
 {
 	color: gray;
 }
 
-div.grid-view ul.pagination li.prev a:hover, div.grid-view ul.pagination li.next a:hover
+ul.pagination li.prev a:hover, ul.pagination li.next a:hover
 {
 	background-color: gray;
 	color: white;
 	font-weight: bold;
 }
 
-div.grid-view ul.pagination li.prev span, div.grid-view ul.pagination li.next span
+ul.pagination li.prev span, ul.pagination li.next span
 {
 	color: #c3c3c3;
 }
 
-div.grid-view ul.pagination li.active a, div.grid-view ul.pagination li.active a:visited, div.grid-view ul.pagination li.active span
+ul.pagination li.active a, ul.pagination li.active a:visited, ul.pagination li.active span
 {
 	color: white;
 	font-weight: bold;

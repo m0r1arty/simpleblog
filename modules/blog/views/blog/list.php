@@ -23,6 +23,11 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
+        'pager' => [
+            'prevPageLabel' => '<i class="fa fa-arrow-left"></i>',
+            'nextPageLabel' => '<i class="fa fa-arrow-right"></i>',
+            'disableCurrentPageButton' => true,
+        ],
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
             'record_id',

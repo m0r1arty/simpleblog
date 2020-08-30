@@ -14,6 +14,11 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="records-public">
 	<?php echo ListView::widget([
 	'dataProvider' => $dataProvider,
+	'pager' => [
+		'prevPageLabel' => '<i class="fa fa-arrow-left"></i>',
+		'nextPageLabel' => '<i class="fa fa-arrow-right"></i>',
+		'disableCurrentPageButton' => true,
+	],
 	'itemView' => '_listViewItem',
 	'layout' => "{pager}\n{items}\n{pager}",
 	]); ?>
