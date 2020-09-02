@@ -5,6 +5,8 @@ use yii\widgets\ActiveForm;
 
 use mihaildev\ckeditor\CKEditor;
 
+use app\modules\blog\widgets\CategoriesWidget;
+
 /* @var $this yii\web\View */
 /* @var $model app\modules\blog\models\Records */
 /* @var $form yii\widgets\ActiveForm */
@@ -15,6 +17,9 @@ use mihaildev\ckeditor\CKEditor;
     <?php $form = ActiveForm::begin(); ?>
 
     <?= $form->field($model, 'title')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'categoryIDs')->widget( CategoriesWidget::className(), [
+        'categories' => \app\modules\blog\helpers\Categories::categoriesForWidget( $model ),
+    ] ) ?>
 
     <?= $form->field($model, 'preview')->widget(
         CKEditor::className(), [

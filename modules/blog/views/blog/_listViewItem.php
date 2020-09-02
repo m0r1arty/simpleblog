@@ -10,4 +10,5 @@ use yii\helpers\Html;
 	<div class="record preview content"><?= $model->preview ?></div>
 	<div class="record preview footer left"><span><a href="<?= Url::to( [ '/blog/blog/view', 'id' => $model->record_id ] ) ?>">Читать...</a></span></div>
 	<div class="record preview footer right"><i class="fa fa-calendar-alt" title="<?= ( $model->created_at === $model->updated_at )? 'Дата публикации' : 'Дата публикации(редактировано)' ?>"></i><span><?= $model->getDate( 'Y.m.d H:i' ) ?></span><i class="fa fa-user" title="Разместил"></i><span><?= $model->user->login ?></span></div>
+	<div style="clear:both"></div>
 </div>

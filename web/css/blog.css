@@ -36,6 +36,12 @@ div.content.footer
 	background-color: #ffffff;
 }
 
+div.records-public > div.list-view > div
+{
+	clear: both;
+	margin-top: 56px;
+}
+
 div.content + div.content.footer, div.record.preview.footer.right
 {
 	float: right;
@@ -104,6 +110,117 @@ ul.pagination li.active a, ul.pagination li.active a:visited, ul.pagination li.a
 	text-decoration: none;
 	background-color: gray;
 	padding: 0px 3px;
+}
+
+/*
+	bold для label в ActiveForm
+*/
+div.form-group label
+{
+	font-weight: 500;
+	font-style: italic;
+}
+
+/*
+	Подсветка для ошибок ActiveForm
+*/
+div.form-group.has-error div.help-block
+{
+	font-size: 0.7em;
+	font-weight: bold;
+	color: red;
+}
+
+div.form-group.has-error .form-control[aria-invalid="true"]
+{
+	border-color: red;
+	box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);
+}
+
+/*
+	Форматирование для виджета CategoriesWidget(админская часть)
+*/
+div.admin-list-categories
+{
+	clear: both;
+	display: block;
+}
+
+div.admin-list-categories ul
+{
+	padding: 0;
+}
+
+div.admin-list-categories ul li
+{
+	cursor: pointer;
+	list-style-type: none;
+	margin: 6px 10px;
+	display: inline-block;
+	border-radius: 6px;
+	padding: 4px;
+	border: 1px dashed black;
+	font-style: italic;
+}
+
+div.admin-list-categories ul li.default
+{
+	/**/
+}
+
+div.admin-list-categories ul li.default:hover
+{
+	box-shadow: 0 0 0 0.2rem rgba(0, 255, 0, 0.25);
+}
+
+div.admin-list-categories ul li.default.error:hover
+{
+	box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);
+}
+
+div.admin-list-categories ul li.active
+{
+	background-color: #5959f7;
+	color: white;
+}
+
+div.admin-list-categories ul li.active.error
+{
+	background-color: #f13a3a;
+	color: white;
+}
+
+/*
+	Правила для виджета категорий на фронтенде
+*/
+div.categories-widget ul
+{
+	padding: 0;
+}
+
+div.categories-widget ul li.categories-widget-item
+{
+	list-style-type: none;
+	margin: 6px 10px;
+	display: inline-block;
+	padding: 4px;
+}
+
+div.categories-widget ul li.categories-widget-item.active
+{
+	background-color: gray;
+	border-radius: 6px;
+}
+
+div.categories-widget ul li.categories-widget-item.active
+{
+	color: white;
+}
+
+div.categories-widget ul li.categories-widget-item.default a
+{
+	color: gray;
+	text-decoration: none;
 }
 
 /*

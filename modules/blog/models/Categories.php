@@ -2,6 +2,7 @@
 
 /**
  * Файл содержит модель для работы с категориями блога.
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
 
 namespace app\modules\blog\models;

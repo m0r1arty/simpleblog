@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Файл содержит класс Controller, расширяющий контроллер приложения.
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
+ */
+
 namespace app\modules\blog\components;
 
 use Yii;

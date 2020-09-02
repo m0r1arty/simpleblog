@@ -23,6 +23,14 @@ use app\components\Module as AppModule;
 class Module extends AppModule
 {
 	/**
+	 * @var string|bool $alias регистрация алиаса @blog или другого; false отменяет регистрацию
+	 */
+	public $alias = '@blog';
+	/**
+	 * @var bool $registerInBuiltInValidators если true - валидатор будет доступен в [[\yii\base\Model::rules]] через short name 'categoryRequired'
+	 */
+	public $registerInBuiltInValidators = true;
+	/**
 	 * @inheritdoc
 	*/
 	public function init()
@@ -31,10 +39,23 @@ class Module extends AppModule
 	}
 
 	/**
+	 * Регистрирует, если нужно, алиас @blog или другой. Регистрирует, если задано, валидатор CategoryRequiredValidator с коротким именем categoryRequired.
 	 * @inheritdoc
 	*/
 	public function bootstrap( $app )
 	{
 		parent::bootstrap( $app );
+
+		if ( ! ( $this->alias === false ) ) {
+			Yii::setAlias( $this->alias, '@app/modules/blog' );
+		}
+
+		if( $this->registerInBuiltInValidators ) {
+			if ( isset( \yii\validators\Validator::$builtInValidators[ 'categoryRequired' ] ) ) {
+				Yii::warning( 'Validator::$builtInValidators уже содержит валидатор categoryRequired' );
+			}
+
+			\yii\validators\Validator::$builtInValidators[ 'categoryRequired' ] = 'app\modules\blog\validators\CategoryRequiredValidator';
+		}
 	}
 }

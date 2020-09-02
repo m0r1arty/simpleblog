@@ -2,6 +2,7 @@
 
 /**
  * Файл содержит BlogController, отвечающий за создание и редактирование записей.
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
 
 namespace app\modules\blog\controllers;
@@ -60,19 +61,38 @@ class BlogController extends \app\modules\blog\components\Controller
 
     /**
      * Метод отображает список постов всего блога
-     * @return mixed
+     * @param int $catid Категория, из которой показывать записи
+     * @return string
      */
-    public function actionIndex()
+    public function actionIndex( $catid = null )
     {
-        $dataProvider = new ActiveDataProvider([
+        if ( !is_null( $catid ) ) {
+            $catid = intval( $catid );
+        }
+
+        $dataProviderConfig = [
             'query' => Records::find()->orderBy( [ 'record_id' => 'desc' ] ),
             'pagination' =>
             [
                 'pageSize' => $this->recordsPerPage,
             ]
-        ]);
+        ];
 
-        return $this->renderRecordList( $dataProvider );
+        if ( $catid > 0 ) {
+            /* @var string $r2cTableName имя таблицы связей */
+            $r2cTableName = \app\modules\blog\models\Record2Category::tableName();
+            $dataProviderConfig[ 'query' ]->innerJoin( $r2cTableName, $r2cTableName . '.record_id = records.record_id' )->where( $r2cTableName . '.category_id = :catid', [ 'catid' => $catid ] );
+        }
+
+        $dataProvider = new ActiveDataProvider( $dataProviderConfig );
+
+        $params = [ 'dataProvider' => $dataProvider ];
+
+        if ( $catid > 0 ) {
+            $params[ 'catid' ] = $catid;
+        }
+
+        return $this->renderRecordList( $params );
     }
 
     /**
@@ -111,13 +131,27 @@ class BlogController extends \app\modules\blog\components\Controller
      * Creates a new Records model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
+     * @throws \Exception
+     * @throws \Throwable
      */
     public function actionCreate()
     {
         $model = new Records();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['list', 'id' => $model->record_id]);
+        /* @var \yii\db\Transaction $transaction */
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->save()) {
+                $transaction->commit();
+                return $this->redirect(['list']);
+            }
+        } catch ( \Exception $e ) {
+            $transaction->rollBack();
+            throw $e;
+        } catch ( \Throwable $e ) {
+            $transaction->rollBack();
+            throw $e;
         }
 
         return $this->render('create', [
@@ -136,8 +170,20 @@ class BlogController extends \app\modules\blog\components\Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->record_id]);
+        /* @var \yii\db\Transaction $transaction */
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->save()) {
+                $transaction->commit();
+                return $this->redirect(['list']);
+            }
+        } catch ( \Exception $e ) {
+            $transaction->rollBack();
+            throw $e;
+        } catch ( \Throwable $e ) {
+            $transaction->rollBack();
+            throw $e;
         }
 
         return $this->render('update', [
@@ -151,10 +197,31 @@ class BlogController extends \app\modules\blog\components\Controller
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
+     * @throws \Exception если удалить не получилось, или при удалении случился \Exception
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        /* @var \yii\db\Transaction $transaction */
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            /* @var int $count */
+            $count = $this->findModel( $id )->delete();
+
+            if( $count === false )
+            {
+                $transaction->rollBack();
+                throw \Exception( '[Records] Не удалось удалить запись id = ' . $id );
+            }
+
+            $transaction->commit();
+        } catch ( \Exception $e ) {
+            $transaction->rollBack();
+            throw $e;
+        } catch ( \Throwable $e ) {
+            $transaction->rollBack();
+            throw $e;
+        }
 
         return $this->redirect(['list']);
     }
@@ -178,12 +245,11 @@ class BlogController extends \app\modules\blog\components\Controller
     /**
      * Общий интерфейс рендеринга ленты сообщений всего блога или отдельной категории
      * @param \yii\data\ActiveDataProvider $dataProvider
+     * @param array $params массив параметров view
      * @return string результат рендеринга
      */
-    protected function renderRecordList( $dataProvider )
+    protected function renderRecordList( $params )
     {
-        return $this->render( 'index', [
-            'dataProvider' => $dataProvider,
-        ] );
+        return $this->render( 'index', $params );
     }
 }
