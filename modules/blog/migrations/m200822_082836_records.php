@@ -18,7 +18,7 @@ class m200822_082836_records extends Migration
             $this->createTable( '{{%records}}',[
                 'record_id' => $this->bigPrimaryKey(),
                 'user_id' => $this->bigInteger()->defaultValue( 0 ),
-                'title' => $this->string(255 )->notNull()->defaultValue( "" ),
+                'title' => $this->string( 255 )->notNull()->defaultValue( "" ),
                 'preview' => $this->text()->notNull()->defaultValue( "" ),
                 'content' => $this->text()->notNull()->defaultValue( "" ),
                 'slug' => $this->string( 60 )->notNull()->defaultValue( "" ),

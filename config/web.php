@@ -22,6 +22,9 @@ $config = [
         'blog' => [
             'class' =>'app\modules\blog\Module',
         ],
+        'sef' => [
+            'class' => 'app\modules\sef\Module',
+        ],
     ],
     'components' => [
         'request' => [
@@ -79,6 +82,7 @@ $config = [
 
 $config['bootstrap'][] = 'queue';
 $config['bootstrap'][] = 'blog';
+$config['bootstrap'][] = 'sef';
 
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment
@@ -86,7 +90,7 @@ if (YII_ENV_DEV) {
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
+        'allowedIPs' => ['127.0.0.1', '::1'],
     ];
 
     $config['bootstrap'][] = 'gii';
