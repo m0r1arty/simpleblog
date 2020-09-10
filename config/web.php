@@ -33,6 +33,7 @@ $config = [
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
+            'defaultDuration' => 86400,
         ],
         'user' => [
             'identityClass' => 'app\models\Users',
@@ -69,11 +70,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                [ 'pattern' => 'signout', 'route' => 'default/signout' ],
-                [ 'pattern' => 'signin', 'route' => 'default/signin' ],
-                [ 'pattern' => 'blog', 'route' => 'blog/blog/index' ],
-                [ 'pattern' => 'blog/<action:[\w\-]+>', 'route' => 'blog/blog/<action>' ],
-                [ 'pattern' => 'categories/<action:[\w\-]+>', 'route' => 'blog/categories/<action>' ],
+                [ 'class' => 'app\modules\sef\Components\UrlRule' ],
             ],
         ],
     ],

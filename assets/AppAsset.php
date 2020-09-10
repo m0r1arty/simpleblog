@@ -25,6 +25,7 @@ class AppAsset extends AssetBundle
     ];
     public $js = [
         'js/blog.login.util.js',
+        'js/categories.widget.asset.js',
     ];
     public $depends = [
         'rmrevin\yii\fontawesome\CdnFreeAssetBundle',

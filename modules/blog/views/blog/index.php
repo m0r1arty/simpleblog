@@ -16,13 +16,15 @@ $this->params['breadcrumbs'][] = $this->title;
 $categoriesWidgetConfig = [
 ];
 
-if ( isset( $catid ) && intval( $catid ) > 0 ) {
-
+if ( isset( $catid ) ) {
 	$catid = intval( $catid );
-	$categoriesWidgetConfig[ 'categories' ] = Categories::categoriesForWidget( null, $catid );
-	$categoriesWidgetConfig[ 'viewList' ] = 'categories';
-	$categoriesWidgetConfig[ 'viewItem' ] = 'category';
+} else {
+	$catid = 0;
 }
+
+$categoriesWidgetConfig[ 'categories' ] = Categories::categoriesForWidget( null, $catid );
+$categoriesWidgetConfig[ 'viewList' ] = 'categories';
+$categoriesWidgetConfig[ 'viewItem' ] = 'category';
 
 ?>
 <?= \app\modules\blog\widgets\CategoriesWidget::widget( $categoriesWidgetConfig ) ?>

@@ -46,6 +46,7 @@ class m200903_051549_sef extends Migration
      */
     public function safeDown()
     {
+        $this->dropIndex( 'idx-uniq-parent_id-slug', '{{%sef}}' );
         $this->dropTable( '{{%sef}}' );
     }
 }

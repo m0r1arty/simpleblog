@@ -60,16 +60,16 @@ class CategoriesController extends Controller
      */
     public function actionIndex()
     {
-        $dataProvider = new ActiveDataProvider([
+        $dataProvider = new ActiveDataProvider( [
             'query' => Categories::find(),
             'pagination' => [
                 'pageSize' => $this->categoriesPerAdminPage,
             ],
-        ]);
+        ] );
 
-        return $this->render('index', [
+        return $this->render( 'index', [
             'dataProvider' => $dataProvider,
-        ]);
+        ] );
     }
 
     /**
@@ -81,13 +81,26 @@ class CategoriesController extends Controller
     {
         $model = new Categories();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['index']);
+        /* @var \yii\db\Transaction $transaction */
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            if ( $model->load( Yii::$app->request->post() ) && $model->save() ) {
+
+                $transaction->commit();
+                return $this->redirect( [ 'index' ] );
+            }
+        } catch( \Exception $e ) {
+            $transaction->rollBack();
+            throw $e;
+        } catch( \Throwable $e ) {
+            $transaction->rollBack();
+            throw $e;
         }
 
-        return $this->render('create', [
+        return $this->render( 'create', [
             'model' => $model,
-        ]);
+        ] );
     }
 
     /**

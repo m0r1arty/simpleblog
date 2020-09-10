@@ -12,6 +12,8 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\SluggableBehavior;
 
+use app\modules\sef\helpers\Sef;
+
 /**
  * This is the model class for table "categories".
  * К модели подключены поведения TimestampBehavior, SluggableBehavior.
@@ -71,5 +73,15 @@ class Categories extends \yii\db\ActiveRecord
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function afterSave( $insert, $changedAttributes )
+    {
+        parent::afterSave( $insert, $changedAttributes );
+
+        Sef::registerRoute( '/blog/blog/index', [ 'catid' => $this->category_id ], $this->slug, 1 );
     }
 }
