@@ -14,6 +14,8 @@ use app\modules\sef\models\BSefRoute;
 use app\modules\sef\models\BSefParams;
 use app\modules\sef\models\BSef;
 use app\modules\sef\exceptions\InvalidRouteRegistrationException;
+use app\modules\sef\exceptions\NotFoundRouteException;
+use app\modules\sef\exceptions\RouteUnknownException;
 
 /**
  * Хелпер Sef. Расширяется от BaseUrl чтобы иметь доступ к protected BaseUrl::normalizeRoute
@@ -58,25 +60,6 @@ class Sef extends \yii\helpers\BaseUrl
 	}
 
 	/**
-	 * Метод getPathByParentId конструирует путь вида [ 'a', 'b', 'c' ] для url '/a/b/c', принимая идентификатор элемента 'c' в таблице {{%sef}}
-	 * @param int $sef_id идентификатор в таблице {{%sef}} для которого необходимо восстановить путь; для примера идентификатор 'c' для url '/a/b/c'
-	 * @param string[] $path массив для рекурсии, накапливающий массив для возврата
-	 * @return string[] массив вида [ 'a', 'b', 'c' ] для url вида '/a/b/c'
-	 */
-	public static function getPathByParentId( $sef_id, $path = [] )
-	{
-		/* @var SefModel $model */
-		$model = SefModel::find()->where( [ 'id' => $sef_id ] )->one();
-
-		if ( is_null( $model ) || $model->parent_id == 0 ) {
-			return $path;
-		} else {
-			array_unshift( $path, $model->slug );
-			return self::getPathByParentId( $model->parent_id, $path );
-		}
-	}
-
-	/**
 	 * Метод registerRoute регистрирует маршрут в модуле sef. Возвращает true в случае успешной регистрации. В случае неудачной регистрации в зависимости от параметра $throwExcept
 	 * или выбрасывает ошибку, или возвращает false. Вызывать метод необходимо внутри транзакции.
 	 * Пример регистрации маршрута:
@@ -97,186 +80,48 @@ class Sef extends \yii\helpers\BaseUrl
 	 */
 	public static function registerRoute( $route, $params, $slug, $parent_id, $throwExcept = true )
 	{
-		/**
-		 * $route не должен быть пустым
-		 */
 		$route = self::normalizeRoute( $route );
 
-		if ( empty( $route ) ) {
+		/* @var \app\modules\sef\helpers\Route */
+		$hRoute = new Route( $route, $params );
+
+		/* @var bool $ret */
+		$ret = $hRoute->register( $slug, $parent_id, $throwExcept );
+
+		if ( $ret ) {
+			/**
+			 * По данному $cacheKey должен находится ассоциативный массив вида array[slug] = [$route,$params].
+			 * Чтобы регистрируемый маршрут заработал данный кеш надо удалять.
+			 */
+			Yii::$app->cache->delete( $hRoute->sefKey() );
+			/**
+			 * Кеш для поиска url по маршруту
+			 */
+			Yii::$app->cache->set( $hRoute->bsefKey(), [ 'pid' => $parent_id, 'url' => $hRoute->url() ] );
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Метод deleteRoute удаляет регистрацию маршрута в модуле sef.
+	 * @return bool true - в случае успешного удаления регистрации, false в противном случае
+	 */
+	public static function deleteRoute( $route, $params, $throwExcept = true )
+	{
+		$route = self::normalizeRoute( $route );
+		/* @var \app\modules\sef\helpers\Route */
+		$hRoute = new Route( $route, $params );
+
+		if ( !$hRoute->load() ) {
 			if ( $throwExcept ) {
-				throw new InvalidRouteRegistrationException();
+				throw new NotFoundRouteException();
 			} else {
 				return false;
 			}
 		}
 
-		/**
-		 * $slug не должен существовать на этом уровне
-		 * @var SefModel
-		 */
-
-		$model = SefModel::find()->where( [ 'parent_id' => $parent_id, 'slug' => $slug ] );
-
-		if ( !is_null( $model->one() ) ) {
-			if ( $throwExcept ) {
-				throw new InvalidRouteRegistrationException();
-			} else {
-				return false;
-			}
-		}
-
-		/**
-		 * Регистрация листа в дереве url
-		 */
-		$model = new SefModel();
-		$model->parent_id = $parent_id;
-		$model->slug = $slug;
-		$model->params = json_encode( array_merge( [ $route ], $params ) );
-
-		if ( !$model->validate() || !$model->save() ) {
-			if ( $throwExcept ) {
-				throw new InvalidRouteRegistrationException();
-			} else {
-				return false;
-			}
-		}
-		/* @var int $sef_id понадобится в таблице {{%bsef}} */
-		$sef_id = $model->id;
-
-		$path = self::getPathByParentId( $parent_id );
-
-		/* @var string $cacheKey используется для сброса кеша */
-		if ( empty( $path ) ) {
-			$cacheKey = 'sefroot';
-		} else {
-			$cacheKey = 'sef:' . implode( ':', $path );
-		}
-
-		/**
-		 * По данному $cacheKey должен находится ассоциативный массив вида array[slug] = [$route,$params].
-		 * Чтобы регистрируемый маршрут заработал данный кеш надо удалять.
-		 */
-		Yii::$app->cache->delete( $cacheKey );
-
-		/**
-		 * Нет необходимости дублировать сам маршрут. Но если его нет - регистрируем в таблице {{%bsef_route}}
-		 */
-
-		/* BSefRoute $model */
-		$model = BSefRoute::find()->where( [ 'crc' => crc32( $route ), 'route' => $route ] )->one();
-
-		if ( is_null( $model ) ) {
-			$model = new BSefRoute();
-			$model->route = $route;
-			$model->crc = crc32( $route );
-
-			if ( !$model->validate() || !$model->save() ) {
-				if ( $throwExcept ) {
-					throw new InvalidRouteRegistrationException();
-				} else {
-					return false;
-				}
-			}
-		}
-		/* @var int $route_id понадобится в таблице {{%bsef}} */
-		$route_id = $model->route_id;
-
-		/**
-		 * Параметры должны быть отсортированы по ключу, т.к. участвуют в формировании ключа кеша.
-		 */
-		ksort( $params );
-
-		/* @var string[] $strParams */
-		$strParams = [];
-
-		foreach ( $params as $key => $val ) {
-			$key = trim( $key );
-			$val = trim( strval( $val ) );
-
-			if ( !empty( $key ) && !empty( $val ) ) {
-				$strParams[] = $key . '=' . $val;
-			}
-		}
-
-		/**
-		 * Таблица {{%bsef_params}} хранит параметры вида 'category_id=4'.
-		 * Их тоже нет необходимости дублировать, поэтому сначала ищем и добавляем только если не находим.
-		 */
-
-		/* @var int[] $paramsIDs */
-		
-		$paramsIDs = [];
-
-		foreach ( $strParams as $val ) {
-			/* @var BSefParams $model */
-			$model = BSefParams::find()->where( [ 'crc' => crc32( $val ), 'param' => $val ] )->one();
-
-			if ( !is_null( $model ) ) {
-				$paramsIDs[] = intval( $model->param_id );
-			} else {
-				$model = new BSefParams();
-				$model->param = $val;
-				$model->crc = crc32( $val );
-
-				if ( !$model->validate() || !$model->save() ) {
-					if( $throwExcept ) {
-						throw new InvalidRouteRegistrationException();
-					} else {
-						return false;
-					}
-				}
-
-				$paramsIDs[] = intval( $model->param_id );
-			}
-		}
-
-		/**
-		 * $paramIDs содержит идентификаторы параметров. Чтобы избежать дубляжа при регистрации необходимо проверить уникальность [route_id,crc,params].
-		 * Для определённости $paramIDs должен быть отсортирован, а затем склеен разделителем.
-		 */
-		sort( $paramsIDs );
-		/* @var string $strModelParams */
-		$strModelParams = implode( ':', $paramsIDs );
-
-		/* @var BSef $model */
-		$model = BSef::find()->where( [ 'route_id' => $route_id, 'crc' => crc32( $strModelParams ), 'params' => $strModelParams ] )->one();
-
-		if ( !is_null( $model ) ) {
-			if ( $throwExcept ) {
-				throw new InvalidRouteRegistrationException();
-			} else {
-				return false;
-			}
-		}
-
-		/**
-		 * Связка маршрут, параметры уникальн - можно совершать последние движения.
-		 * Таблица {{%bsef}} нужна для: 1) ссылки на {{%sef}} при поиске url по [$route,$params] 2) уверенности в уникальности пары [$route,$params]
-		 */
-
-		$model = new BSef();
-		$model->params = $strModelParams;
-		$model->crc = crc32( $strModelParams );
-		$model->route_id = $route_id;
-		$model->sef_id = $sef_id;
-
-		if ( !$model->validate() || !$model->save() ) {
-			if ( $throwExcept ) {
-				throw new InvalidRouteRegistrationException();
-			} else {
-				return false;
-			}
-		}
-
-		/**
-		 * Кеш для поиска url по маршруту
-		 */
-
-		/* @var string $cacheKey ключ для хранения parent_id и url */
-		$cacheKey = 'bsef:' . $route . ':' . implode( ':', $strParams );
-		Yii::$app->cache->set( $cacheKey, [ 'pid' => $parent_id, 'url' => '/' . implode( '/', $path ) . ( empty( $path ) ? '' : '/' ) . $slug ] );
-
-		return true;
+		return $hRoute->unregister( $throwExcept );
 	}
 
 	/**
@@ -290,32 +135,13 @@ class Sef extends \yii\helpers\BaseUrl
 		/**
 		 * Сначала поиск в кеше.
 		 */
-		$route = trim( $route );
 
-		ksort( $params );
+		/* @var \app\modules\sef\helpers\Route */
+		$hRoute = new Route( $route, $params );
 
-		/* @var string[] $strParams */
-		$strParams = [];
-		/* @var string[] $usedParams */
-		$usedParams = [];
-		/* @var string[] $unusedParams */
-		$unusedParams = [];
-
-		foreach ( $params as $key => $val ) {
-			$key = trim( $key );
-			$val = trim( strval( $val ) );
-			
-			$usedParams[] = $key;
-
-			if ( !empty( $key ) && !empty( $val ) ) {
-				$strParams[] = $key . '=' . $val;
-			}
-		}
-
-		$cacheKey = 'bsef:' . $route . ':' . implode( ':', $strParams );
-
-		$data = Yii::$app->cache->get( $cacheKey );
-
+		/* @var mixed $data */
+		$data = $hRoute->urlFromCache();
+		
 		if ( $data !== false ) {
 
 			if ( is_array( $data ) && isset( $data[ 'url' ] ) ) {
@@ -324,86 +150,85 @@ class Sef extends \yii\helpers\BaseUrl
 		}
 
 		/**
-		 * Если в кеше ничего не найдено:
-		 * 1. поиск route_id в {{bsef_route}} по crc и route
-		 * 2. сбор идентификаторов параметров в таблице {{%bsef_params}} по crc и param; при этом дополнительные параметры(такие как page_num, например) отфильтровываются
-		 * 3. поиск sef_id в {{%bsef}} по route_id, crc и params
-		 * 4. поиск slug и parent_id в {{%sef}} по sef_id
-		 * 5. конструирование url по найденному slug и self::getPathByParentId(parent_id)
-		 * 6. добавление к url дополнительных параметров через http_build_query
-		 * 7. сохранение url в кеше
+		 * Если в кеше ничего нет.
 		 */
 
-		/* @var BSefRoute $model */
-		$model = BSefRoute::find()->where( [ 'crc' => crc32( $route ), 'route' => $route ] )->one();
-
-		if ( is_null( $model ) ) {
+		if ( !$hRoute->load() ) {
 			return false;
 		}
 
-		/* @var int $route_id */
-		$route_id = intval( $model->route_id );
-
-		/* @var int[] $paramsIDs */
-		$paramsIDs = [];
-
-		/* @var int $i */
-		$i = 0;
-		/* @var $model */
-		foreach ( $strParams as $val ) {
-			$model = BSefParams::find()->where( [ 'crc' => crc32( $val ), 'param' => $val ] )->one();
-			
-			if ( !is_null( $model ) ) {
-				$paramsIDs[] = intval( $model->param_id );
-			} else {
-				$unusedParams[] = $i;
-			}
-
-			$i++;
-		}
-
-		sort( $paramsIDs );
-
-		$strModelParams = implode( ':', $paramsIDs );
-
-		/* @var BSef $model */
-		$model = BSef::find()->where( [ 'route_id' => $route_id, 'crc' => crc32( $strModelParams ), 'params' => $strModelParams ] )->one();
-
-		if ( is_null( $model ) ) {
-			return false;
-		}
-
-		$sef_id = intval( $model->sef_id );
-
-		/* @var SefModel $model */
-		$model = SefModel::find()->where( [ 'id' => $sef_id ] )->one();
-
-		if ( is_null( $model ) ) {
-			return false;
-		}
-
-		/* @var string[] $path */
-		$path = self::getPathByParentId( $model->parent_id );
-
-		$url = '/' . implode( '/', $path ) . ( ( empty( $path ) ) ? '' : '/' ) . $model->slug;
+		/* @var string $url */
+		$url = $hRoute->url();
 		
-		$usedParams = array_flip( $usedParams );
-		$remainParams = array_intersect( $unusedParams, $usedParams );
-		$remainParams = array_filter( $usedParams, function ( $val ) use ( $remainParams ) {
-			return in_array( $val, $remainParams );
-		} );
-
-		/* @var array $queryParams массив для QueryString */
-		$queryParams = array_intersect_key( $params, $remainParams );
-		/* @var string[] массив ключей параметров для хранения в кеше */
-		$persistParams = array_keys( array_diff_key( $params, $queryParams ) );
-
-		if ( !empty( $queryParams ) ) {
-			$url .= '?' . http_build_query( $queryParams );
-		}
-
-		Yii::$app->cache->set( $cacheKey, [ 'pid' => $model->parent_id, 'url' => $url ] );
+		Yii::$app->cache->set( $hRoute->bsefKey(), [ 'pid' => $hRoute->parent_id(), 'url' => $url ] );
 
 		return $url;
+	}
+
+	/**
+	 * Метод moveSlug позволяет изменить slug и/или передать его другому родительскому узлу.
+	 * @param string $route маршрут
+	 * @param array[string] $params параметры маршрута
+	 * @param string $slug новый slug маршрута
+	 * @param int $parent_id идентификатор нового потомка для маршрута
+	 * @param bool $throwExcept true - если нужно генерировать исключения, вместо возврата false
+	 * @return bool true - если переименование или смена потомка увенчалась успехом
+	 * @throws NotFoundRouteException если не удалось загрузить переданный маршрут
+	 * @throws \yii\base\InvalidArgumentException если узел с таким slug существует среди потомков родительского sef узла
+	 * @throws RouteUnknownException Route::moveSlug выбрасывает если не удалось получить экземпляр SefModel или не получилось сохранить изменения в экземпляре
+	 */
+	public static function moveSlug( $route, $params, $slug, $parent_id, $throwExcept = true )
+	{
+		$route = self::normalizeRoute( $route );
+
+		/* @var \app\modules\sef\helpers\Route */
+		$hRoute = new Route( $route, $params );
+
+		if ( !$hRoute->load() ) {
+			if ( $throwExcept ) {
+				throw new NotFoundRouteException();
+			} else {
+				return false;
+			}
+		}
+
+		if ( self::slugExists( $slug, $parent_id ) ) {
+			if ( $throwExcept ) {
+				throw new \yii\base\InvalidArgumentException();
+			} else {
+				return false;
+			}
+		}
+
+		return $hRoute->moveSlug( $slug, $parent_id, $throwExcept );
+	}
+
+	/**
+	 * Метод slugExists проверяет существует ли у заданного узла потомок с указанным slug
+	 * @param string $slug проверяемый slug
+	 * @param int $parent_id идентификатор узла в sef дереве
+	 * @return bool true - если такой slug существует в sef дереве с идентификатором $parent_id
+	 */
+	public static function slugExists( $slug, $parent_id )
+	{
+		/* @var SefModel $model */
+		$model = SefModel::find()->where( [ 'parent_id' => $parent_id, 'slug' => $slug ] )->one();
+
+		return !is_null( $model );
+	}
+
+	/**
+	 * Метод routeInstance инстанцирует экземпляр хелпера Route.
+	 * @param string $route маршрут
+	 * @param array[string] $params параметры маршрута
+	 * @return Route экземпляр хелпера
+	 */
+	public static function routeInstance( $route, $params )
+	{
+		$route = self::normalizeRoute( $route );
+		/* @var \app\modules\sef\helpers\Route */
+		$hRoute = new Route( $route, $params );
+
+		return $hRoute;
 	}
 }

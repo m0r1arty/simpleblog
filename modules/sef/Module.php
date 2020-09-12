@@ -46,11 +46,11 @@ class Module extends AppModule
 		}
 
 		if( $this->registerInBuiltInValidators ) {
-			if ( isset( \yii\validators\Validator::$builtInValidators[ 'slug' ] ) ) {
-				Yii::warning( 'Validator::$builtInValidators уже содержит валидатор slug' );
+			if ( isset( \yii\validators\Validator::$builtInValidators[ 'uniqueslug' ] ) ) {
+				Yii::warning( 'Validator::$builtInValidators уже содержит валидатор uniqueslug' );
 			}
 
-			\yii\validators\Validator::$builtInValidators[ 'slug' ] = 'app\modules\sef\validators\SlugValidator';
+			\yii\validators\Validator::$builtInValidators[ 'uniqueslug' ] = 'app\modules\sef\validators\UniqueSlugValidator';
 		}
 	}
 }

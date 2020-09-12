@@ -114,13 +114,25 @@ class CategoriesController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['index']);
+        /* @var \yii\db\Transaction $transaction */
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            if ( $model->load( Yii::$app->request->post() ) && $model->save() ) {
+                $transaction->commit();
+                return $this->redirect( [ 'index' ] );
+            }
+        } catch( \Exception $e ) {
+            $transaction->rollBack();
+            throw $e;
+        } catch( \Throwable $e ) {
+            $transaction->rollBack();
+            throw $e;
         }
 
-        return $this->render('update', [
+        return $this->render( 'update', [
             'model' => $model,
-        ]);
+        ] );
     }
 
     /**
@@ -132,7 +144,19 @@ class CategoriesController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        /* @var \yii\db\Transaction $transaction */
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            $this->findModel($id)->delete();
+            $transaction->commit();
+        } catch ( \Exception $e ) {
+            $transaction->rollBack();
+            throw $e;
+        } catch( \Throwable $e ) {
+            $transaction->rollBack();
+            throw $e;
+        }
 
         return $this->redirect(['index']);
     }
