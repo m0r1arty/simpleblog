@@ -29,6 +29,7 @@ use app\modules\sef\helpers\Route;
  */
 class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\components\UniqueSlugInterface
 {
+    const SCENARIO_WEB = 'web';
     /**
      * {@inheritdoc}
      */
@@ -48,7 +49,8 @@ class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\compon
                 'class' => SluggableBehavior::className(),
                 'attribute' => 'title',
                 'ensureUnique' => true,
-                'sefAllowedScenarios' => [ 'default' ],
+                'sefAllowedScenarios' => [ self::SCENARIO_WEB ],
+                'sefShowErrorsInScenarios' => [ self::SCENARIO_WEB ],
                 'uniqueValidator' => [
                     'class' => 'app\modules\sef\validators\UniqueSlugValidator',
                 ],
@@ -65,6 +67,17 @@ class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\compon
             [['created_at', 'updated_at'], 'integer'],
             [['title'], 'string', 'max' => 255],
             [['slug'], 'string', 'max' => 60],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function scenarios()
+    {
+        return [
+            'default' => [ 'title', 'slug', 'created_at', 'updated_at' ],
+            self::SCENARIO_WEB => [ 'title', 'slug', 'created_at', 'updated_at' ],
         ];
     }
 

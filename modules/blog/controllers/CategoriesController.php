@@ -10,7 +10,7 @@ namespace app\modules\blog\controllers;
 use Yii;
 use app\modules\blog\models\Categories;
 use yii\data\ActiveDataProvider;
-use yii\web\Controller;
+use app\modules\blog\components\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -79,7 +79,7 @@ class CategoriesController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Categories();
+        $model = new Categories( [ 'scenario' => Categories::SCENARIO_WEB ] );
 
         /* @var \yii\db\Transaction $transaction */
         $transaction = Yii::$app->db->beginTransaction();
@@ -113,6 +113,7 @@ class CategoriesController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $model->scenario = Categories::SCENARIO_WEB;
 
         /* @var \yii\db\Transaction $transaction */
         $transaction = Yii::$app->db->beginTransaction();

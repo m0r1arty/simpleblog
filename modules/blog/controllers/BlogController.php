@@ -137,7 +137,7 @@ class BlogController extends \app\modules\blog\components\Controller
      */
     public function actionCreate()
     {
-        $model = new Records();
+        $model = new Records( [ 'scenario' => Records::SCRENARIO_WEB ] );
 
         /* @var \yii\db\Transaction $transaction */
         $transaction = Yii::$app->db->beginTransaction();
@@ -170,6 +170,7 @@ class BlogController extends \app\modules\blog\components\Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $model->scenario = Records::SCENARIO_WEB;
 
         /* @var \yii\db\Transaction $transaction */
         $transaction = Yii::$app->db->beginTransaction();

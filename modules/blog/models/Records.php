@@ -39,7 +39,14 @@ use app\modules\sef\helpers\Sef;
  */
 class Records extends \yii\db\ActiveRecord implements \app\modules\sef\components\UniqueSlugInterface
 {
+    /**
+     * Событие при запросе категорий для виджета категорий. Предполагается, что фильтр CategoriesFilterBehavior изменит статус категорий(например, default станет error - значит, что с текущим slug выбрать её нельзя, active станет "active error" - выбрана, но не должна быть выбрана(так произойдёт, если записи пытаются менять slug при этом другая запись с таким же slug`ом уже принадлежит выбранной категории ) )
+     */
     const EVENT_AFTER_CATEGORIES_FOR_WIDGET_FIND = 'categoriesForWidgetFind';
+    /**
+     * Сценарий, который позволит отобразить ошибку, вместо автоматического присвоения уникального slug
+     */
+    const SCENARIO_WEB = 'web';
     /**
      * Трейт, который подключает метод парсинга строки в массив категорий
      */
@@ -64,6 +71,7 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
      * TimestampBehavior для автоматического заполнения полей created_at и updated_at
      * SluggableBehavior для автоматического заполнения поля slug
      * AttributeBehavior для автоматического заполнения user_id
+     * CategoriesFilterBehavior для ограничения выбора категорий в виджете категорий
      * {@inheritdoc}
      */
     public function behaviors()
@@ -74,8 +82,8 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
                 'class' => SluggableBehavior::className(),
                 'attribute' => 'title',
                 'ensureUnique' => true,
-                'sefAllowedScenarios' => [ 'default' ],
-                'sefShowErrorsInScenarios' => [ 'default' ],
+                'sefAllowedScenarios' => [ self::SCENARIO_WEB ],
+                'sefShowErrorsInScenarios' => [ self::SCENARIO_WEB ],
                 'uniqueValidator' => [
                     'class' => 'app\modules\sef\validators\UniqueSlugValidator',
                 ],
@@ -92,6 +100,16 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
             [
                 'class' => \app\modules\blog\behaviors\CategoriesFilterBehavior::className(),
             ],
+        ];
+    }
+
+    /**
+     */
+    public function scenarios()
+    {
+        return [
+            'default' => [ 'title', 'preview', 'content', 'slug', 'user_id', 'categoryIDs', 'created_at', 'updated_at' ],
+            self::SCENARIO_WEB => [ 'title', 'preview', 'content', 'slug', 'user_id', 'categoryIDs', 'created_at', 'updated_at' ],
         ];
     }
 
@@ -435,6 +453,13 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
         
         if ( !$insert ) {
             $this->parseCategoryIDs( $this->_oldCategoryIDs, $oldIDs );
+        }
+
+        /**
+         * Категории не менялись.
+         */
+        if ( empty( $oldIDs ) ) {
+            return;
         }
 
         /* @var int[] $ids идентификаторы категорий, назначенные после редактирования*/
