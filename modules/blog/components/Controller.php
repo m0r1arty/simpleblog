@@ -21,5 +21,7 @@ class Controller extends AppController
 	public function init()
 	{
 		parent::init();
+
+		\app\modules\blog\assets\BlogAsset::register( $this->view );
 	}
 }

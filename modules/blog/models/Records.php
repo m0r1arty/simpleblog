@@ -11,10 +11,13 @@ use Yii;
 use yii\helpers\Url;
 
 use yii\behaviors\TimestampBehavior;
-use yii\behaviors\SluggableBehavior;
+use app\modules\sef\behaviors\SluggableBehavior;
 use yii\behaviors\AttributeBehavior;
 
+use app\modules\blog\models\Categories;
 use app\modules\blog\traits\CategoryIDsTrait;
+use app\modules\blog\components\CategoriesFilterEvent;
+use app\modules\sef\helpers\Sef;
 
 /**
  * This is the model class for table "records".
@@ -34,8 +37,9 @@ use app\modules\blog\traits\CategoryIDsTrait;
  * @property string $dateCreated
  * @property string $dateUpdated
  */
-class Records extends \yii\db\ActiveRecord
+class Records extends \yii\db\ActiveRecord implements \app\modules\sef\components\UniqueSlugInterface
 {
+    const EVENT_AFTER_CATEGORIES_FOR_WIDGET_FIND = 'categoriesForWidgetFind';
     /**
      * Трейт, который подключает метод парсинга строки в массив категорий
      */
@@ -69,6 +73,12 @@ class Records extends \yii\db\ActiveRecord
             [
                 'class' => SluggableBehavior::className(),
                 'attribute' => 'title',
+                'ensureUnique' => true,
+                'sefAllowedScenarios' => [ 'default' ],
+                'sefShowErrorsInScenarios' => [ 'default' ],
+                'uniqueValidator' => [
+                    'class' => 'app\modules\sef\validators\UniqueSlugValidator',
+                ],
             ],
             [
                 'class' => AttributeBehavior::className(),
@@ -79,28 +89,10 @@ class Records extends \yii\db\ActiveRecord
                     return Yii::$app->user->id;
                 }
             ],
+            [
+                'class' => \app\modules\blog\behaviors\CategoriesFilterBehavior::className(),
+            ],
         ];
-    }
-
-    /**
-     * Возвращает массив идентификаторов категорий к которым привязана запись блога.
-     * @param int $record_id идентификатор записи блога
-     * @return int[] массив идентификаторов категорий
-     */
-    protected function retriveCategoryIDs( $record_id )
-    {
-        /* @var Record2Category $model */
-        $model = Record2Category::find()->where( [ 'record_id' => $record_id ] );
-
-        /* @var int[] */
-        $ids = array_map(
-            function ( $r2c )
-            {
-                return intval( $r2c->category_id );
-            }, $model->all()
-        );
-
-        return $ids;
     }
 
     /**
@@ -137,7 +129,7 @@ class Records extends \yii\db\ActiveRecord
              * skipOnEmpty = false необходим, потому что валидатор проверяет, что хотя бы одна категория задана, если skipOnEmpty == true, то будет опущен вызов валидатора
              */
             [['categoryIDs'], 'categoryRequired', 'skipOnEmpty' => false ],
-            [['title', 'slug'], 'required', 'message' => '{attribute} не может быть пустым' ],
+            [['title'], 'required', 'message' => '{attribute} не может быть пустым' ],
             [['title'], 'string', 'max' => 255],
             [['slug'], 'string', 'max' => 60],
         ];
@@ -175,80 +167,15 @@ class Records extends \yii\db\ActiveRecord
     }
 
     /**
-     * Метод управляет связями между записью и категориями. Должен вызываться только после сохранения записи.
-     * Алгоритм:
-     * 1. получить категории, которые были привязаны до редактирования(опускается при вставке)
-     * 2. получить категории, с которыми устанавливается связь
-     * 3. из этих двух массивов вычислить общие категории функцией array_intersect
-     * 4. функцией array_diff вычислить категории для разлинковки и категории для линковки
-     * 5. произвести вставку и/или удаление связей
-     * @throws \Exception если при вставке или удалении возникла ошибка; данный Exception должен перехватываться кодом сохранения записи и откатывать транзакцию
+     * {@inheritdoc}
      */
-    protected function processLinkingCategories()
+    public function beforeSave( $insert )
     {
-        /* @var int[] $oldIDs идентификаторы категорий, которые были назначены до редактирования*/
-        $oldIDs = [];
-        
-        if ( !$insert ) {
-            $this->parseCategoryIDs( $this->_oldCategoryIDs, $oldIDs );
+        if ( !parent::beforeSave( $insert ) ) {
+            return false;
         }
-
-        /* @var int[] $ids идентификаторы категорий, назначенные после редактирования*/
-        $ids = [];
         
-        $this->parseCategoryIDs( $this->_categoryIDs, $ids );
-
-        /* @var int[] $bothIDs общие идентификаторы ДО-ПОСЛЕ */
-        $bothIDs = array_intersect( $oldIDs, $ids );
-
-        /* @var int[] $deleteIDs те, что array_diff $bothIDs и $oldIDs - удалить */
-        $deleteIDs = array_diff( $oldIDs, $bothIDs );
-        /* @var int[] $insertIDs те, что array_diff $bothIDs и $ids - вставить */
-        $insertIDs = array_diff( $ids, $bothIDs );
-        
-        foreach ( $deleteIDs as $id ) {
-            /* @var Record2Category @model */
-            $model = Record2Category::find()->where( [ 'record_id' => $this->record_id, 'category_id' => $id ] );
-            /* @var int $count */
-            $count = intval( $model->count() );
-            
-            if( $count === 1  ) {
-                $count = $model->one()->delete();
-
-                if ( $count === false ) {
-                    Yii::error( 'При разлинковке записи и категории возникла ошибка' );
-                    throw new \Exception( "[Record2Category] can't delete id: " . $model->id );
-                }
-            } elseif( $count > 1 ) {
-                Yii::warning( 'При разлинковке записи и категории найдено более одной записи' );
-                throw new \Exception( "[Record2Category] can't unlink id: " . $model->id . ", count: " . $count );
-            } else {
-                Yii::warning( 'При разлинковке записи и категории не удалось найти запись' );
-                throw new \Exception( "[Record2Category] can't unlink id: " . $model->id . ", count = 0" );
-            }
-        }
-
-        foreach ( $insertIDs as $id ) {
-            /* @var Record2Category @model */
-            $model = Record2Category::find()->where( [ 'record_id' => $this->record_id, 'category_id' => $id ] );
-            /* @var int $count */
-            $count = intval( $model->count() );
-            
-            if( $count === 0  ) {
-                $model = new Record2Category();
-
-                $model->record_id = $this->record_id;
-                $model->category_id = $id;
-
-                if ( !$model->save() ) {
-                    Yii::error( 'При линковке записи и категории возникла ошибка' );
-                    throw new \Exception( "[Record2Category] can't insert pair: record_id = " . $this->record_id . ", category_id = " . $id );
-                }
-            } elseif( $count > 0 ) {
-                Yii::warning( 'При линковке записи и категории найдены существующие записи в количестве: ' . $count );
-                throw new \Exception( "[Record2Category] can't link -> found exists records(" . $count . ")" );
-            }
-        }
+        return true;
     }
 
     /**
@@ -258,7 +185,28 @@ class Records extends \yii\db\ActiveRecord
     {
         parent::afterSave( $insert, $changedAttributes );
 
-        $this->processLinkingCategories();
+        $this->processLinkingCategories( $insert );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeDelete()
+    {
+        if ( !parent::beforeDelete() ) {
+            return false;
+        }
+
+        /* @var int[] $ids */
+        $ids = [];
+
+        $this->parseCategoryIDs( $this->_categoryIDs, $ids );
+
+        foreach ( $ids as $catid ) {
+            Sef::deleteRoute( '/blog/blog/view', [ 'catid' => $catid, 'id' => $this->record_id ] );
+        }
+
+        return true;
     }
 
     /**
@@ -271,7 +219,7 @@ class Records extends \yii\db\ActiveRecord
     }
 
     /**
-     * Виртуальное свойство user.
+     * Связь user.
      * @return yii\web\IdentityInterface модель пользователя - владельца записи
      * @throws yii\base\NotSupportedException если запрашивается пользователь для новой записи Records
      */
@@ -287,22 +235,20 @@ class Records extends \yii\db\ActiveRecord
     }
 
     /**
-     * Виртуальное свойство categories. Возвращает категории, привязанные к текущей записи.
+     * Связь categories. Предоставляет доступ к категориям, привязанным к текущей записи.
      * @return \yii\db\ActiveQuery
      */
     public function getCategories()
     {
-        /* @var string $categoriesTable */
-        $categoriesTable = \app\modules\blog\models\Categories::tableName();
-        /* @var string $r2cTable */
-        $r2cTable = \app\modules\blog\models\Record2Category::tableName();
+        return $this->hasMany( Categories::className(), [ 'category_id' => 'category_id' ] )->via( 'record2Category' );
+    }
 
-        $query = new \yii\db\ActiveQuery( \app\modules\blog\models\Categories::className() );
-        $query->select( $categoriesTable . '.*' )->from( $categoriesTable )
-            ->innerJoin( $r2cTable, $categoriesTable . '.category_id = ' . $r2cTable . '.category_id' )
-            ->where( $r2cTable . '.record_id = :id', [ 'id' => $this->record_id ] );
-        
-        return $query;
+    /**
+     * Связь record2Category.
+     */
+    public function getRecord2Category()
+    {
+        return $this->hasMany( Record2Category::className(), [ 'record_id' => 'record_id' ] );
     }
 
     /**
@@ -388,6 +334,176 @@ class Records extends \yii\db\ActiveRecord
             }
         }
 
+        $event = new CategoriesFilterEvent;
+        $event->categories = &$ret;
+
+        $this->trigger( self::EVENT_AFTER_CATEGORIES_FOR_WIDGET_FIND, $event );
+
         return $ret;
+    }
+
+    /**
+     * @param mixed $catid идентификатор категории, если не задан - будет использован первый из списка
+     * @return string url для записи
+     */
+    public function makeLink( $catid = null )
+    {
+        if ( is_null( $catid ) ) {
+            /* @var int[] */
+            $ids = [];
+            $this->parseCategoryIDs( $this->_categoryIDs, $ids );
+            $catid = $ids[ 0 ];
+        } else {
+            $catid = intval( $catid );
+        }
+
+        return Url::to( [ '/blog/blog/view', 'catid' => $catid, 'id' => $this->record_id ] );
+    }
+
+    /**
+     * Метод checkUniqueSlug имплементирует интерфейс \app\modules\sef\components\UniqueSlugInterface необходимый для проверки slug на уникальность.
+     * @param string $attribute имя проверяемого slug-атрибута 
+     * @param \app\modules\sef\validators\UniqueSlugValidator $validator текущий экземпляр валидатора
+     * @return bool true - если slug уникален относительно корня sef дерева
+     * @throws \app\modules\sef\exceptions\RouteNotFoundException если по какой-то причине не удалось найти маршрут для данной категори
+     */
+    public function checkUniqueSlug( $attribute, $validator )
+    {
+        /* @var int[] $ids */
+        $ids = [];
+        $this->parseCategoryIDs( $this->_categoryIDs, $ids );
+
+        foreach ( $ids as $catid ) {
+            /* @var \app\modules\sef\helpers\Route $hRoute */
+            $hRoute = Sef::routeInstance( '/blog/blog/index', [ 'catid' => $catid ] );
+
+            if ( !$hRoute->load() ) {
+                throw new \app\modules\sef\exceptions\RouteNotFound();
+            }
+
+            /* @var bool $slugExists */
+            $slugExists = Sef::slugExists( $this->attributes[ $attribute ], $hRoute->sef_id() );
+
+            if ( $slugExists ) {
+                /* @var Categories $model */
+                $model = Categories::findOne( $catid );
+
+                if ( !is_null( $model ) ) {
+                    $validator->message = 'По крайней мере категория {category} имеет такой же slug';
+                    $validator->msgParams[ 'category' ] = $model->title;
+                }
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Возвращает массив идентификаторов категорий к которым привязана запись блога.
+     * @param int $record_id идентификатор записи блога
+     * @return int[] массив идентификаторов категорий
+     */
+    protected function retriveCategoryIDs( $record_id )
+    {
+        /* @var int[] $ids */
+        $ids = [];
+
+        foreach ( $this->categories as $category ) {
+            $ids[]  = intval( $category->category_id );
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Метод управляет связями между записью и категориями. Должен вызываться только после сохранения записи.
+     * Алгоритм:
+     * 1. получить категории, которые были привязаны до редактирования(опускается при вставке)
+     * 2. получить категории, с которыми устанавливается связь
+     * 3. из этих двух массивов вычислить общие категории функцией array_intersect
+     * 4. функцией array_diff вычислить категории для разлинковки и категории для линковки
+     * 5. произвести вставку и/или удаление связей
+     * @param bool $insert если true - производится вставка, false - изменение
+     * @throws \Exception если при вставке или удалении возникла ошибка; данный Exception должен перехватываться кодом сохранения записи и откатывать транзакцию
+     */
+    protected function processLinkingCategories( $insert )
+    {
+        /* @var int[] $oldIDs идентификаторы категорий, которые были назначены до редактирования*/
+        $oldIDs = [];
+        
+        if ( !$insert ) {
+            $this->parseCategoryIDs( $this->_oldCategoryIDs, $oldIDs );
+        }
+
+        /* @var int[] $ids идентификаторы категорий, назначенные после редактирования*/
+        $ids = [];
+        
+        $this->parseCategoryIDs( $this->_categoryIDs, $ids );
+
+        /* @var int[] $bothIDs общие идентификаторы ДО-ПОСЛЕ */
+        $bothIDs = array_intersect( $oldIDs, $ids );
+
+        /* @var int[] $deleteIDs те, что array_diff $bothIDs и $oldIDs - удалить */
+        $deleteIDs = array_diff( $oldIDs, $bothIDs );
+        /* @var int[] $insertIDs те, что array_diff $bothIDs и $ids - вставить */
+        $insertIDs = array_diff( $ids, $bothIDs );
+        
+        foreach ( $deleteIDs as $id ) {
+            /* @var Record2Category @model */
+            $model = Record2Category::find()->where( [ 'record_id' => $this->record_id, 'category_id' => $id ] );
+            /* @var int $count */
+            $count = intval( $model->count() );
+            
+            if( $count === 1  ) {
+                Sef::deleteRoute( '/blog/blog/view', [ 'catid' => $id, 'id' => $this->record_id ] );
+
+                $count = $model->one()->delete();
+
+                if ( $count === false ) {
+                    Yii::error( 'При разлинковке записи и категории возникла ошибка' );
+                    throw new \Exception( "[Record2Category] can't delete id: " . $model->id );
+                }
+            } elseif( $count > 1 ) {
+                Yii::warning( 'При разлинковке записи и категории найдено более одной записи' );
+                throw new \Exception( "[Record2Category] can't unlink id: " . $model->id . ", count: " . $count );
+            } else {
+                Yii::warning( 'При разлинковке записи и категории не удалось найти запись' );
+                throw new \Exception( "[Record2Category] can't unlink id: " . $model->id . ", count = 0" );
+            }
+        }
+
+        foreach ( $insertIDs as $id ) {
+            /* @var Record2Category @model */
+            $model = Record2Category::find()->where( [ 'record_id' => $this->record_id, 'category_id' => $id ] );
+            /* @var int $count */
+            $count = intval( $model->count() );
+            
+            if( $count === 0  ) {
+
+                /* @var \app\modules\sef\helpers\Route */
+                $hRoute = Sef::routeInstance( '/blog/blog/index', [ 'catid' => $id ] );
+
+                if ( !$hRoute->load() ) {
+                    throw new \Exception( 'Невозможно загрузить маршрут для категории' );
+                }
+
+                Sef::registerRoute( '/blog/blog/view', [ 'catid' => $id, 'id' => $this->record_id ], $this->slug, $hRoute->sef_id() );
+
+                $model = new Record2Category();
+
+                $model->record_id = $this->record_id;
+                $model->category_id = $id;
+
+                if ( !$model->save() ) {
+                    Yii::error( 'При линковке записи и категории возникла ошибка' );
+                    throw new \Exception( "[Record2Category] can't insert pair: record_id = " . $this->record_id . ", category_id = " . $id );
+                }
+            } elseif( $count > 0 ) {
+                Yii::warning( 'При линковке записи и категории найдены существующие записи в количестве: ' . $count );
+                throw new \Exception( "[Record2Category] can't link -> found exists records(" . $count . ")" );
+            }
+        }
     }
 }

@@ -163,28 +163,28 @@ div.admin-list-categories ul li
 	font-style: italic;
 }
 
-div.admin-list-categories ul li.default
+div.admin-list-categories ul li.categories-widget-item.default
 {
 	/**/
 }
 
-div.admin-list-categories ul li.default:hover
+div.categories-widget.admin-list-categories ul li.categories-widget-item.default:hover
 {
 	box-shadow: 0 0 0 0.2rem rgba(0, 255, 0, 0.25);
 }
 
-div.admin-list-categories ul li.default.error:hover
+div.categories-widget.admin-list-categories ul li.categories-widget-item.error:hover
 {
 	box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);
 }
 
-div.admin-list-categories ul li.active
+div.categories-widget.admin-list-categories ul li.categories-widget-item.active
 {
 	background-color: #5959f7;
 	color: white;
 }
 
-div.admin-list-categories ul li.active.error
+div.categories-widget.admin-list-categories ul li.categories-widget-item.active.error
 {
 	background-color: #f13a3a;
 	color: white;

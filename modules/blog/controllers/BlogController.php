@@ -71,7 +71,7 @@ class BlogController extends \app\modules\blog\components\Controller
         }
 
         $dataProviderConfig = [
-            'query' => Records::find()->orderBy( [ 'record_id' => 'desc' ] ),
+            'query' => Records::find()->with( 'user' )->with( 'categories' )->orderBy( [ 'record_id' => 'desc' ] ),
             'pagination' =>
             [
                 'pageSize' => $this->recordsPerPage,
@@ -81,7 +81,8 @@ class BlogController extends \app\modules\blog\components\Controller
         if ( $catid > 0 ) {
             /* @var string $r2cTableName имя таблицы связей */
             $r2cTableName = \app\modules\blog\models\Record2Category::tableName();
-            $dataProviderConfig[ 'query' ]->innerJoin( $r2cTableName, $r2cTableName . '.record_id = records.record_id' )->where( $r2cTableName . '.category_id = :catid', [ 'catid' => $catid ] );
+            $dataProviderConfig[ 'query' ]->innerJoinWith( 'record2Category' )->
+            where( $r2cTableName . '.category_id = :catid', [ 'catid' => $catid ] );
         }
 
         $dataProvider = new ActiveDataProvider( $dataProviderConfig );
@@ -120,11 +121,11 @@ class BlogController extends \app\modules\blog\components\Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id)
+    public function actionView( $catid, $id )
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+        return $this->render( 'view', [
+            'model' => $this->findModel( $id ),
+        ] );
     }
 
     /**
@@ -142,9 +143,9 @@ class BlogController extends \app\modules\blog\components\Controller
         $transaction = Yii::$app->db->beginTransaction();
 
         try {
-            if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->save()) {
+            if ( $model->load( Yii::$app->request->post() ) && $model->save() ) {
                 $transaction->commit();
-                return $this->redirect(['list']);
+                return $this->redirect( [ 'list' ] );
             }
         } catch ( \Exception $e ) {
             $transaction->rollBack();
@@ -154,9 +155,9 @@ class BlogController extends \app\modules\blog\components\Controller
             throw $e;
         }
 
-        return $this->render('create', [
+        return $this->render( 'create', [
             'model' => $model,
-        ]);
+        ] );
     }
 
     /**

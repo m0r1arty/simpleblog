@@ -10,8 +10,11 @@ namespace app\modules\blog\models;
 use Yii;
 
 use yii\behaviors\TimestampBehavior;
-use app\modules\sef\behaviors\SluggableBehavior;
 
+use app\modules\blog\models\Records;
+use app\modules\blog\models\Record2Category;
+
+use app\modules\sef\behaviors\SluggableBehavior;
 use app\modules\sef\helpers\Sef;
 use app\modules\sef\helpers\Route;
 
@@ -118,32 +121,47 @@ class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\compon
             return false;
         }
 
+        foreach ( $this->records as $record ) {
+            /* @var int $record_id */
+            $record_id = intval( $record->record_id );
+            /* @var int $count */
+            $count = $record->delete();
+
+            if ( $count !== 1 ) {
+                throw new \Exception( 'Record(' . $record_id . ') not deleted' );
+            }
+        }
+
         Sef::deleteRoute( '/blog/blog/index', [ 'catid' => $this->category_id ]  );
 
         return true;
     }
 
     /**
+     * Связь records.
+     */
+    public function getRecords()
+    {
+        return $this->hasMany( Records::className(), [ 'record_id' => 'record_id' ] )->via( 'record2Category' );
+    }
+
+    /**
+     * Связь record2Category.
+     */
+    public function getRecord2Category()
+    {
+        return $this->hasMany( Record2Category::className(), [ 'category_id' => 'category_id' ] );
+    }
+
+    /**
      * Метод checkUniqueSlug имплементирует интерфейс \app\modules\sef\components\UniqueSlugInterface необходимый для проверки slug на уникальность.
      * @param string $attribute имя проверяемого slug-атрибута 
+     * @param \app\modules\sef\validators\UniqueSlugValidator $validator текущий экземпляр валидатора
      * @return bool true - если slug уникален относительно корня sef дерева
-     * @throws \app\modules\sef\exceptions\RouteNotFound если по какой-то причине не удалось найти маршрут для данной категори
+     * @throws \app\modules\sef\exceptions\RouteNotFoundException если по какой-то причине не удалось найти маршрут для данной категори
      */
-    public function checkUniqueSlug( $attribute )
+    public function checkUniqueSlug( $attribute, $validator )
     {
-        $slugExists = Sef::slugExists( $this->attributes[ $attribute ], 1 );
-
-        if ( $this->isNewRecord ) {
-            return !$slugExists;
-        }
-        
-        /* @var Route $hRoute */
-        $hRoute = Sef::routeInstance( '/blog/blog/index', [ 'catid' => $this->category_id ] );
-
-        if ( !$hRoute->load() ) {
-            throw new \app\modules\sef\exceptions\RouteNotFound();
-        }
-
-        return !$slugExists || ( $slugExists && $this->attributes[ $attribute ] === $hRoute->slug() );
+        return !Sef::slugExists( $this->attributes[ $attribute ], 1 );
     }
 }

@@ -83,7 +83,8 @@ class CategoriesWidget
 					self._activeIDs.push( id );
 
 					$( this ).removeClass( self._defaultClass ).addClass( self._activeClass );
-				} else {
+				} else if( ind !== -1 ) {
+
 					self._activeIDs.splice( ind, 1 );
 
 					$( this ).removeClass( self._activeClass ).addClass( self._defaultClass );

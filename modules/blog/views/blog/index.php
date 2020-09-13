@@ -37,6 +37,7 @@ $categoriesWidgetConfig[ 'viewItem' ] = 'category';
 		'disableCurrentPageButton' => true,
 	],
 	'itemView' => '_listViewItem',
+	'viewParams' => [ 'catid' => empty( $catid )? null : $catid ],
 	'layout' => "{pager}\n{items}\n{pager}",
 	]); ?>
 </div>

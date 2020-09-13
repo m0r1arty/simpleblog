@@ -30,7 +30,7 @@
 					case 'a'://active
 						$class = $css[ 'active' ];
 						break;
-					case 'ar':
+					case 'ae'://active error
 						$class = $css[ 'active' ] . ' ' . $css[ 'error' ];
 						break;
 					case 'e'://error

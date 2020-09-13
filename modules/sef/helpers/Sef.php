@@ -231,4 +231,28 @@ class Sef extends \yii\helpers\BaseUrl
 
 		return $hRoute;
 	}
+
+	/**
+	 * @param string $slug slug по которому производят поиск
+	 * @param int $parent_id идентификатор узла в sef дереве
+	 * @return Route|null прогруженный данными экземпляр Route если пара slug/parent_id существует; null - если такой пары нет
+	 */
+	public static function routeInstanceBySlugParentId( $slug, $parent_id )
+	{
+		/* @var SefModel $model */
+		$model = SefModel::find()->where( [ 'parent_id' => $parent_id, 'slug' => $slug ] )->one();
+
+		if ( is_null( $model ) ) {
+			return null;
+		}
+
+		/* @var array $params */
+		$params = json_decode( $model->params, true );
+		$route = $params[ 0 ];
+
+		/* @var Route $hRoute */
+		$hRoute = new Route( $route, $params );
+
+		return $hRoute;
+	}
 }

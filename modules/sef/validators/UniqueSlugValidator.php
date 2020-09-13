@@ -15,6 +15,11 @@ namespace app\modules\sef\validators;
 class UniqueSlugValidator extends \yii\validators\Validator
 {
 	/**
+	 * @var string[] $msgParams массив для параметров, используемых в formatMessage
+	 */
+	public $msgParams = [];
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function init()
@@ -43,8 +48,8 @@ class UniqueSlugValidator extends \yii\validators\Validator
 			$model->addError( $attribute, 'Модель должна реализовывать UniqueSlugInterface интерфейс' );
 		}
 
-		if ( !$model->checkUniqueSlug( $attribute ) ) {
-			$model->addError( $attribute, $this->formatMessage( $this->message, [ 'attribute' => $attribute ] ) );
+		if ( !$model->checkUniqueSlug( $attribute, $this ) ) {
+			$model->addError( $attribute, $this->formatMessage( $this->message, array_merge( $this->msgParams, [ 'attribute' => $attribute ] ) ) );
 		}
 	}
 }

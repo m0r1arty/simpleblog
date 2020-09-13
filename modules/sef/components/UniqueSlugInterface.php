@@ -10,5 +10,9 @@ namespace app\modules\sef\components;
  */
 interface UniqueSlugInterface
 {
-	public function checkUniqueSlug( $attribute );
+	/**
+	 * @param string $attribute имя атрибута
+	 * @param \app\modules\sef\validators\UniqueSlugValidator $validator текущий экземпляр валидатора. Им можно, воспользоваться, например, чтобы изменить текст $message ошибки, который будет отображён.
+	 */
+	public function checkUniqueSlug( $attribute, $validator );
 }

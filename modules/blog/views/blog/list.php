@@ -3,6 +3,8 @@
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
+
+use yii\helpers\Url;
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
@@ -42,7 +44,23 @@ $this->params['breadcrumbs'][] = $this->title;
                     return $model->dateCreated;
                 },
             ],
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'urlCreator' => function ( $action, $model, $key, $index, $urlCreator ) {
+                    switch ( $action ) {
+                        case 'view':
+                            return $model->makeLink();
+                            break;
+                        default:
+                        /**
+                         * default action from [[\yii\grid\ActionColumn::createUrl]]
+                         */
+                            $params = is_array($key) ? $key : ['id' => (string) $key];
+                            $params[0] = $urlCreator->controller ? $urlCreator->controller . '/' . $action : $action;
+                            return Url::toRoute($params);
+                    }
+                },
+            ],
         ],
     ]); ?>
 

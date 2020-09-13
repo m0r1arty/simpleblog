@@ -480,6 +480,8 @@ class Route
 		if ( !$this->_loaded ) {
 			throw new InvalidConfigException();
 		}
+
+		return $this->_params;
 	}
 
 	/**
