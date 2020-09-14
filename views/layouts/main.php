@@ -80,6 +80,7 @@ if ( Yii::$app->user->isGuest ) {
         [ 'label' => 'Контент', 'url' => '#', 'items' => [
             [ 'label' => 'Записи', 'url' => Url::to( [ '/blog/blog/list' ] ) ],
             [ 'label' => 'Категории', 'url' => Url::to( [ '/blog/categories/index' ] ) ],
+            [ 'label' => 'Граббер', 'url' => Url::to( [ '/grabber/tasks/index' ] ) ],
             ],
         ]);
     }

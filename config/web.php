@@ -25,6 +25,9 @@ $config = [
         'sef' => [
             'class' => 'app\modules\sef\Module',
         ],
+        'grabber' => [
+            'class' => 'app\modules\grabber\Module',
+        ],
     ],
     'components' => [
         'request' => [
@@ -80,6 +83,7 @@ $config = [
 $config['bootstrap'][] = 'queue';
 $config['bootstrap'][] = 'blog';
 $config['bootstrap'][] = 'sef';
+$config['bootstrap'][] = 'grabber';
 
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment

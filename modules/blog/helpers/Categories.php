@@ -29,7 +29,7 @@ class Categories
 	 */
 	public static function categoriesForWidget( $model = null, $category_id = 0 )
 	{
-		if ( !is_null( $model ) && $model instanceof \app\modules\blog\models\Records ) {
+		if ( !is_null( $model ) && $model instanceof \app\modules\blog\components\RetriveCategoriesInterface ) {
 			return $model->getCategoriesForWidget();
 		} elseif( !is_null( $model ) ) {
 			throw new \yii\base\InvalidArgumentException();

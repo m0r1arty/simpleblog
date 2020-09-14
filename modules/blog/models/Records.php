@@ -16,6 +16,7 @@ use yii\behaviors\AttributeBehavior;
 
 use app\modules\blog\models\Categories;
 use app\modules\blog\traits\CategoryIDsTrait;
+use app\modules\blog\traits\RetriveCategoriesTrait;
 use app\modules\blog\components\CategoriesFilterEvent;
 use app\modules\sef\helpers\Sef;
 
@@ -37,7 +38,7 @@ use app\modules\sef\helpers\Sef;
  * @property string $dateCreated
  * @property string $dateUpdated
  */
-class Records extends \yii\db\ActiveRecord implements \app\modules\sef\components\UniqueSlugInterface
+class Records extends \yii\db\ActiveRecord implements \app\modules\sef\components\UniqueSlugInterface, \app\modules\blog\components\RetriveCategoriesInterface
 {
     /**
      * Событие при запросе категорий для виджета категорий. Предполагается, что фильтр CategoriesFilterBehavior изменит статус категорий(например, default станет error - значит, что с текущим slug выбрать её нельзя, active станет "active error" - выбрана, но не должна быть выбрана(так произойдёт, если записи пытаются менять slug при этом другая запись с таким же slug`ом уже принадлежит выбранной категории ) )
@@ -51,6 +52,10 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
      * Трейт, который подключает метод парсинга строки в массив категорий
      */
     use CategoryIDsTrait;
+    /**
+     * Трейт для traitCategoriesForWidget
+     */
+    use RetriveCategoriesTrait;
     /**
      * @var string
      */
@@ -325,32 +330,8 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
      */
     public function getCategoriesForWidget()
     {
-        $ret = [];
-
-        /* @var \app\modules\blog\models\Categories $models */
-        $models = Categories::find()->all();
-
-        if ( $this->isNewRecord ) {
-            foreach ( $models as $category ) {
-                $ret[] = [
-                    'id' => $category->category_id,
-                    'title' => $category->title,
-                    'link' => Url::to( [ '/blog/blog/index', 'catid' => $category->category_id ] ),
-                    'status' => 'd',
-                ];
-            }
-        } else {
-            /* @var int[] $ids */
-            $ids = $this->retriveCategoryIDs( $this->record_id );
-            foreach ( $models as $category ) {
-                $ret[] = [
-                    'id' => $category->category_id,
-                    'title' => $category->title,
-                    'link' => Url::to( [ '/blog/blog/index', 'catid' => $category->category_id ] ),
-                    'status' => ( ( in_array( $category->category_id, $ids ) ) ?  'a' : 'd' ),
-                ];
-            }
-        }
+        /* @var array $ret */
+        $ret = $this->traitCategoriesForWidget( $this->retriveCategoryIDs( $this->record_id ) );
 
         $event = new CategoriesFilterEvent;
         $event->categories = &$ret;
@@ -420,6 +401,7 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
 
     /**
      * Возвращает массив идентификаторов категорий к которым привязана запись блога.
+     * @param int[] $categories массив с идентификаторами категорий
      * @param int $record_id идентификатор записи блога
      * @return int[] массив идентификаторов категорий
      */
