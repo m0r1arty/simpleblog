@@ -49,7 +49,13 @@ class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\compon
                 'class' => SluggableBehavior::className(),
                 'attribute' => 'title',
                 'ensureUnique' => true,
+                /**
+                 * В каких сценариях разрешено менять slug
+                 */
                 'sefAllowedScenarios' => [ self::SCENARIO_WEB ],
+                /**
+                 * В каких сценариях запрещёна автоматическая генерация slug`ов
+                 */
                 'sefShowErrorsInScenarios' => [ self::SCENARIO_WEB ],
                 'uniqueValidator' => [
                     'class' => 'app\modules\sef\validators\UniqueSlugValidator',
@@ -116,6 +122,9 @@ class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\compon
             return false;
         }
 
+        /**
+         * При изменении записи надо переместить slug. Новый slug уже должен быть проверен на уникальность.
+         */
         if ( !$insert ) {
             if ( $this->isAttributeChanged( 'slug' ) ) {
                 Sef::moveSlug( '/blog/blog/index', [ 'catid' => $this->category_id ], $this->slug, 1 );
@@ -134,6 +143,9 @@ class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\compon
             return false;
         }
 
+        /**
+         * Удаление записей по одной, чтобы они могли удалить свои узлы из sef дерева.
+         */
         foreach ( $this->records as $record ) {
             /* @var int $record_id */
             $record_id = intval( $record->record_id );
@@ -145,6 +157,9 @@ class Categories extends \yii\db\ActiveRecord implements \app\modules\sef\compon
             }
         }
 
+        /**
+         * Удаляется узел sef дерева
+         */
         Sef::deleteRoute( '/blog/blog/index', [ 'catid' => $this->category_id ]  );
 
         return true;

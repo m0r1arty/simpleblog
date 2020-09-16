@@ -16,7 +16,7 @@ trait CategoryIDsTrait
 	 * Метод парсит строку и складывает найденные идентификаторы в массив, переданный по ссылке
 	 * @param string $str строка, которая должна иметь вид '1,3,8' etc
 	 * @param int[] &ids массив, куда будут помещены найденные идентификаторы
-	 * @throws \yii\base\InvalidArgumentException
+	 * @throws \yii\base\InvalidArgumentException если первый аргумент не строка
 	 */
 	public function parseCategoryIDs( $str, &$ids )
 	{

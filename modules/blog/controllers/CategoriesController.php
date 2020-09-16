@@ -79,6 +79,10 @@ class CategoriesController extends Controller
      */
     public function actionCreate()
     {
+        /**
+         * Сценарий имеет аналогичное назначение
+         * @see [[BlogController::actionCreate]]
+         */
         $model = new Categories( [ 'scenario' => Categories::SCENARIO_WEB ] );
 
         /* @var \yii\db\Transaction $transaction */
@@ -113,6 +117,10 @@ class CategoriesController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        /**
+         * Сценарий имеет аналогичное назначение
+         * @see [[BlogController::actionCreate]]
+         */
         $model->scenario = Categories::SCENARIO_WEB;
 
         /* @var \yii\db\Transaction $transaction */

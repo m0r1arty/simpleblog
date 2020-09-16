@@ -1,8 +1,9 @@
 <?php
 
 /**
+ * Файл содержит задачу HttpTask
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
-
 namespace app\modules\grabber\tasks;
 
 use Yii;
@@ -14,14 +15,13 @@ use app\modules\grabber\exceptions\ContentNotFoundException;
 use app\modules\grabber\exceptions\RecordModelException;
 
 /**
+ * Класс HttpTask реализует задачу запроса данных с web страницы и обработку их выбранным парсером.
  */
  class HttpTask extends BaseTask
  {
- 	public function init()
- 	{
- 		//
- 	}
-
+ 	/**
+ 	 * {@inheritdoc}
+ 	 */
  	public static function taskTitle()
  	{
  		return 'HTTP источник';
@@ -183,6 +183,9 @@ use app\modules\grabber\exceptions\RecordModelException;
  		$this->afterGrabbing( $records, $countGrabbed );
  	}
 
+ 	/**
+ 	 * {@inheritdoc}
+ 	 */
  	public function getParsers()
  	{
  		$parsers = \app\modules\grabber\models\Parsers::find()->all();

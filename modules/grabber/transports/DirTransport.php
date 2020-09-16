@@ -1,8 +1,9 @@
 <?php
 
 /**
+ * Файл содержит транспорт DirTransport
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
-
 namespace app\modules\grabber\transports;
 
 use Yii;
@@ -14,9 +15,13 @@ use app\modules\grabber\exceptions\DirNotFoundException;
 use app\modules\grabber\exceptions\NotAccessibleException;
 
 /**
+ * Класс DirTransport реализует задачи получения списка файлов директории и получение их контента.
  */
  class DirTransport extends BaseTransport implements GetFilesInterface
  {
+ 	/**
+ 	 * {@inheritdoc}
+ 	 */
  	public static function transportTitle()
  	{
  		return 'Сканер директорий';
@@ -27,6 +32,9 @@ use app\modules\grabber\exceptions\NotAccessibleException;
  	 */
  	public function getFiles( $dir )
  	{
+ 		/**
+ 		 * Если это не директория, не читаема или не открывается
+ 		 */
  		if ( !is_dir( $dir ) || !is_readable( $dir ) || ( $dh = opendir( $dir ) ) === false ) {
  			throw new DirNotFoundException();
  		}

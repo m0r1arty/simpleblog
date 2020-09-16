@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * Файл содержит задачу ScanDirTask
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
 
 namespace app\modules\grabber\tasks;
@@ -13,10 +15,12 @@ use app\modules\grabber\exceptions\NotAccessibleException;
 use app\modules\grabber\exceptions\ContentNotFoundException;
 
 /**
+ * Класс ScanDirTask реализует задачу сканирования директории и обработки найденных файлов выбранным парсером.
  */
  class ScanDirTask extends BaseTask
  {
  	/**
+ 	 * {@inheritdoc}
  	 */
  	public static function taskTitle()
  	{
@@ -24,6 +28,7 @@ use app\modules\grabber\exceptions\ContentNotFoundException;
  	}
 
  	/**
+ 	 * {@inheritdoc}
  	 */
  	public function run()
  	{
@@ -132,6 +137,9 @@ use app\modules\grabber\exceptions\ContentNotFoundException;
  		$this->afterGrabbing( $records, $countGrabbed );
  	}
 
+ 	/**
+ 	 * {inheritdoc}
+ 	 */
  	public function getTransports()
  	{
  		$transports = \app\modules\grabber\models\Transports::find()->all();

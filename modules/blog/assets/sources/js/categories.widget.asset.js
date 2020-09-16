@@ -136,7 +136,11 @@ window.addEventListener( 'load', function() {
 	$( '.categories-widget' ).each(
 		function()
 		{
-			window.categoriesIDs[ $( this ).find( "input:first" ).attr( "id" ) ] = new CategoriesWidget( $( this ) );
+			let id = $( this ).find( "input:first" ).attr( "id" );
+
+			if ( id !== undefined ) {
+				window.categoriesIDs[ id ] = new CategoriesWidget( $( this ) );
+			}
 		}
 	);
 } );

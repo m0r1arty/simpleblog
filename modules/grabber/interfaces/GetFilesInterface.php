@@ -7,13 +7,13 @@
 namespace app\modules\grabber\interfaces;
 
 /**
- * Интерфейс GetFilesInterface предназначен для парсеров.
+ * Интерфейс GetFilesInterface предназначен для транспортов, которые должны возвращать файлы.
  */
 interface GetFilesInterface
 {
 	/**
-	 * Метод используется для получения списка файлов в указанной директории
-	 * @param mixed $data данные, которые вернул транспорт.
+	 * Метод getFiles используется для получения списка файлов в указанной директории.
+	 * @param string $dir директория, из которой нужно собрать файлы
 	 * @return array массив имён файлов в директории; пустой массив, если директория не содержит файлов.
 	 * @throws \app\modules\grabber\exceptions\DirNotFoundException если $dir не является директорий
 	 */

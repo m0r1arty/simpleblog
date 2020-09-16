@@ -46,10 +46,16 @@ class Module extends AppModule
 	{
 		parent::bootstrap( $app );
 
+		/**
+		 * Регистрация псевдонима, если нужна.
+		 */
 		if ( ! ( $this->alias === false ) ) {
 			Yii::setAlias( $this->alias, '@app/modules/blog' );
 		}
 
+		/**
+		 * Регистрация shortname валидатора, если нужна
+		 */
 		if( $this->registerInBuiltInValidators ) {
 			if ( isset( \yii\validators\Validator::$builtInValidators[ 'categoryRequired' ] ) ) {
 				Yii::warning( 'Validator::$builtInValidators уже содержит валидатор categoryRequired' );

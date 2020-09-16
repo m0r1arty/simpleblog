@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Файл содержит модель TaskInstances
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
+ */
 namespace app\modules\grabber\models;
 
 use Yii;
@@ -29,7 +33,7 @@ class TaskInstances extends \yii\db\ActiveRecord implements \app\modules\blog\co
     /* @var string разделённый запятыми список идентификаторов категорий куда задача будет складывать посты с собранными данными */
     public $categoryIDs = '';
 
-    /* @var array[string] массив с параметрами, которые должны использоваться во время запуска задачи: идентификатор и/или дата поста на сайте(как точка останова сбора данных) */
+    /* @var array[string] массив с параметрами, которые должны использоваться во время запуска задачи и не видны при редактировании задачи из админки: идентификатор и/или дата поста на сайте(как точка останова сбора данных) */
     protected $otherParams = [];
     /**
      * {@inheritdoc}
@@ -128,6 +132,9 @@ class TaskInstances extends \yii\db\ActiveRecord implements \app\modules\blog\co
     {
         $params = json_decode( $this->params, true );
 
+        /**
+         * Основные параметры - источник и список категорий; всё остальное - дополнительные.
+         */
         $this->source = $params[ 'source' ];
         $this->categoryIDs = $params[ 'categoryIDs' ];
 
@@ -139,11 +146,21 @@ class TaskInstances extends \yii\db\ActiveRecord implements \app\modules\blog\co
         }, ARRAY_FILTER_USE_KEY );
     }
 
+    /**
+     * Метод возвращает дополнительный параметр
+     * @param string $name имя параметра
+     * @return null|mixed значение параметра или null, если параметр не существует
+     */
     public function getParam( $name )
     {
         return $this->otherParams[ $name ] ?? NULL;
     }
 
+    /**
+     * Метод устанавливает дополнительный параметр
+     * @param string $name имя дополнительного параметра
+     * @param mixed $val значение параметра
+     */
     public function setParam( $name, $val )
     {
         $this->otherParams[ $name ] = $val;

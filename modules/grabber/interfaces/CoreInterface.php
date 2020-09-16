@@ -1,10 +1,13 @@
 <?php
 
 /**
+ * Файл содержит интерфейс CoreInterface
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
 namespace app\modules\grabber\interfaces;
 
 /**
+ * Интерфейс CoreInterface должо реализовывать каждое ядро задачи.
  */
 interface CoreInterface
 {

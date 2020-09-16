@@ -33,6 +33,7 @@ class Module extends AppModule
 		'maxRecords' => 25,//если у задачи нет сохранения(дата до какого поста надо грабить или ид поста) - это максимальное количество постов(после отработки задача должна сохранить дату/ид поста)
 	];
 	/**
+	 * Шаблоны писем администратору
 	 */
 	public $mailPath = '@grabber/mail';
 	/**
@@ -51,7 +52,10 @@ class Module extends AppModule
 	{
 		parent::bootstrap( $app );
 
-		if ( ! ( $this->alias === false ) ) {
+		/**
+		 * Регистрация псевдонима, если нужна.
+		 */
+		if ( !( $this->alias === false ) ) {
 			Yii::setAlias( $this->alias, '@app/modules/grabber' );
 		}
 

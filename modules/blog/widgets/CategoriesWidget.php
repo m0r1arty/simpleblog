@@ -76,20 +76,32 @@
  	{
  		$params = [];
 
+        /**
+         * $this->categories должне быть массивом
+         */
  		if ( !is_array( $this->categories ) ) {
  			throw new \yii\base\InvalidConfigException;
  		}
 
+        /**
+         * Нет категорий для выбора
+         */
  		if ( empty( $this->categories ) ) {
  			return '';
  		}
 
+        /**
+         * Ключи title и link должны быть у каждой категории
+         */
  		foreach ( $this->categories as $category ) {
  			if ( !is_array( $category ) || !isset( $category[ 'title' ], $category[ 'link' ] ) ) {
  				throw new \yii\base\InvalidConfigException();
  			}
  		}
 
+        /**
+         * CSS классы для контейнера, категории, которую можно выбрать, активной категории и категории, которую выбрать нельзя.
+         */
  		$params[ 'css' ] = [
  			'container' => $this->containerCssClass,
  			'default' => $this->defaultCssItemClass,

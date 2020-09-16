@@ -41,10 +41,16 @@ class Module extends AppModule
 	{
 		parent::bootstrap( $app );
 
-		if ( ! ( $this->alias === false ) ) {
+		/**
+		 * Регистрация псевдонима, если нужна.
+		 */
+		if ( !( $this->alias === false ) ) {
 			Yii::setAlias( $this->alias, '@app/modules/sef' );
 		}
 
+		/**
+		 * Регистрация shortname валидатора, если нужно.
+		 */
 		if( $this->registerInBuiltInValidators ) {
 			if ( isset( \yii\validators\Validator::$builtInValidators[ 'uniqueslug' ] ) ) {
 				Yii::warning( 'Validator::$builtInValidators уже содержит валидатор uniqueslug' );

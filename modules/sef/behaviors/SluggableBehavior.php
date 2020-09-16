@@ -31,6 +31,23 @@ class SluggableBehavior extends \yii\behaviors\SluggableBehavior
 	 */
 	protected function isNewSlugNeeded()
 	{
+		/**
+		 * В базовом если метод вернёт true будет сгенерирован новый slug, иначе slug останется прежним(из post).
+		 * Алгоритм базового:
+		 * если slug пустой - вернуть true
+		 * если immutable === true вернуть false
+		 * если attribute is null - вернуть true
+		 * если изменился attribute - вернуть true
+		 * 
+		 * Для чего надо возвращать true, если по сценарию разрешается редактировать slug как угодно?
+		 * Чтобы не прохлопать пустой slug и протащить валидацию на уникальность.
+		 * 
+		 * Смысл в следующем:
+		 * Если разрешено изменять slug или запрещено, но slug изменился - будет вызван generateSlug, а он перегружен.
+		 * generateSlug вернёт slug, который указал пользователь, если изменять slug разрешено или он пустой.
+		 * Если ensureUnique == true - будет вызван makeUnique, а он перегружен.
+		 * makeUnique - вызовет 1 раз валидацию slug на уникальность и оставит ошибку для отображения, если сценарий запрещает автоматическую генерацию уникальных уникальных slug.
+		 */
 		$model = $this->owner;
 
 		if ( in_array( $model->scenario, $this->sefAllowedScenarios ) ) {
@@ -48,6 +65,7 @@ class SluggableBehavior extends \yii\behaviors\SluggableBehavior
 	}
 
 	/**
+	 * @see [[isNewSlugNeeded]]
 	 * {@inheritdoc}
 	 */
 	protected function generateSlug( $slugParts )
@@ -60,6 +78,7 @@ class SluggableBehavior extends \yii\behaviors\SluggableBehavior
 	}
 
 	/**
+	 * @see [[isNewSlugNeeded]]
 	 * {@inheritdoc}
 	 */
 	protected function makeUnique( $slug )
@@ -70,6 +89,9 @@ class SluggableBehavior extends \yii\behaviors\SluggableBehavior
 			return parent::makeUnique( $slug );
 		}
 
+		/**
+		 * @see [[\yii\validators\SluggableBehavior::validateSlug]]
+		 */
         /* @var $validator UniqueValidator */
         /* @var $model BaseActiveRecord */
         $validator = Yii::createObject(array_merge(

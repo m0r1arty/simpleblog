@@ -1,8 +1,9 @@
 <?php
 
 /**
+ * Файл содержит трейт RetriveCategoriesTrait
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
-
 namespace app\modules\blog\traits;
 
 use Yii;
@@ -11,6 +12,7 @@ use yii\helpers\Url;
 use app\modules\blog\models\Categories;
 
 /**
+ * Трейт участвует в работе виджета \app\modules\blog\widgets\CategoriesWidget.
  */
  trait RetriveCategoriesTrait
  {
@@ -19,7 +21,7 @@ use app\modules\blog\models\Categories;
      * В случае, если текущая запись связана с какой-то категорией - она выделяется статусом 'a' - active.
      * @param int[] $ids - массив идентификаторов категорий к которым привязана запись
      * @see [[app\modules\blog\widgets\CategoriesWidget::categories]]
-     * @return array[] массив элементами которого являются ассоциативные массивы
+     * @return array[] массив элементами которого являются ассоциативные массивы с говорящими ключами id,title,link,status
      */
     public function traitCategoriesForWidget( $ids )
     {

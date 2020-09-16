@@ -66,6 +66,9 @@ class BlogController extends \app\modules\blog\components\Controller
      */
     public function actionIndex( $catid = null )
     {
+        /**
+         * Когда $catid === null отображаются все записи блога
+         */
         if ( !is_null( $catid ) ) {
             $catid = intval( $catid );
         }
@@ -137,7 +140,10 @@ class BlogController extends \app\modules\blog\components\Controller
      */
     public function actionCreate()
     {
-        $model = new Records( [ 'scenario' => Records::SCRENARIO_WEB ] );
+        /**
+         * Сценарий позволяет позволяет включить редактирование пользователем slug`а, но отключить автоматическую генерацию slug с выводом текста ошибки на страницу редактирования.
+         */
+        $model = new Records( [ 'scenario' => Records::SCENARIO_WEB ] );
 
         /* @var \yii\db\Transaction $transaction */
         $transaction = Yii::$app->db->beginTransaction();
@@ -170,6 +176,11 @@ class BlogController extends \app\modules\blog\components\Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+
+        /**
+         * Сценарий имеет аналогичное назначение
+         * @see [[actionCreate]]
+         */
         $model->scenario = Records::SCENARIO_WEB;
 
         /* @var \yii\db\Transaction $transaction */

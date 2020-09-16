@@ -184,7 +184,7 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
         parent::afterFind();
 
         /* @var int[] $ids */
-        $ids = $this->retriveCategoryIDs( $this->record_id );
+        $ids = $this->retriveCategoryIDs();
 
         $this->_categoryIDs = implode( ',', $ids );
     }
@@ -208,6 +208,10 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
     {
         parent::afterSave( $insert, $changedAttributes );
 
+        /**
+         * Выполнить отображение записи на категории.
+         * Вставляется или удаляется запись Record2Category и регистрируется узел или удаляется регистрация в sef дереве.
+         */
         $this->processLinkingCategories( $insert );
     }
 
@@ -223,6 +227,9 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
         /* @var int[] $ids */
         $ids = [];
 
+        /**
+         * Снимаем регистрацию маршрута со всех категорий
+         */
         $this->parseCategoryIDs( $this->_categoryIDs, $ids );
 
         foreach ( $ids as $catid ) {
@@ -323,16 +330,20 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
     }
 
     /**
-     * Формирует и возвращает массив категорий(ассоциативный массив).
-     * В случае, если текущая запись связана с какой-то категорией - она выделяется статусом 'a' - active.
-     * @see [[app\modules\blog\widgets\CategoriesWidget::categories]]
-     * @return array[] массив элементами которого являются ассоциативные массивы
+     * {@inheritdoc}
      */
     public function getCategoriesForWidget()
     {
         /* @var array $ret */
-        $ret = $this->traitCategoriesForWidget( $this->retriveCategoryIDs( $this->record_id ) );
+        
+        /**
+         * Получаем категории текущей записи, получаем массив категорий с указанием статуса и активности
+         */
+        $ret = $this->traitCategoriesForWidget( $this->retriveCategoryIDs() );
 
+        /**
+         * Обрабатываем фильтром, чтобы знать какие категории нельзя выбрать или какие выбраны напрасно.
+         */
         $event = new CategoriesFilterEvent;
         $event->categories = &$ret;
 
@@ -342,7 +353,8 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
     }
 
     /**
-     * @param mixed $catid идентификатор категории, если не задан - будет использован первый из списка
+     * Создаёт ссылку на запись. Когда нужна ссылка из категории - передаётся id категории, когда нужна ссылка из общей ленты $catid === null.
+     * @param mixed $catid идентификатор категории, если не задан - будет использован первый из списка категорий записи.
      * @return string url для записи
      */
     public function makeLink( $catid = null )
@@ -372,6 +384,9 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
         $ids = [];
         $this->parseCategoryIDs( $this->_categoryIDs, $ids );
 
+        /**
+         * Пройти по категориям в которых должна быть представлена запись и проверить доступность slug.
+         */
         foreach ( $ids as $catid ) {
             /* @var \app\modules\sef\helpers\Route $hRoute */
             $hRoute = Sef::routeInstance( '/blog/blog/index', [ 'catid' => $catid ] );
@@ -401,11 +416,9 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
 
     /**
      * Возвращает массив идентификаторов категорий к которым привязана запись блога.
-     * @param int[] $categories массив с идентификаторами категорий
-     * @param int $record_id идентификатор записи блога
      * @return int[] массив идентификаторов категорий
      */
-    protected function retriveCategoryIDs( $record_id )
+    protected function retriveCategoryIDs()
     {
         /* @var int[] $ids */
         $ids = [];

@@ -51,6 +51,7 @@ $config = [
         ],
         'queue' => [
         	'class' => 'yii\queue\file\Queue',
+            'as log' => \yii\queue\LogBehavior::class,
         	'path' => '@runtime/queue',
         ],
         'db' => $db,

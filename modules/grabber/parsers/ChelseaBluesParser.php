@@ -1,8 +1,9 @@
 <?php
 
 /**
+ * Файл содержит парсер для сайта https://chelseablues.ru/
+ * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
-
 namespace app\modules\grabber\parsers;
 
 use Yii;
@@ -16,14 +17,22 @@ use app\modules\grabber\exceptions\LinksNotFoundException;
 use app\modules\grabber\exceptions\ContentNotFoundException;
 
 /**
+ * Класс ChelseaBluesParser собирает новости с сайта https://chelseablues.ru/.
+ * В админке для задачи должен быть задан соответствующий источник.
  */
  class ChelseaBluesParser extends BaseParser implements GetLinksInterface, NextSourceInterface
  {
+ 	/**
+ 	 * {@inheritdoc}
+ 	 */
  	public static function parserTitle()
  	{
  		return 'Парсер ChelseaBlues';
  	}
 
+ 	/**
+ 	 * {@inheritdoc}
+ 	 */
  	public function parse( $data )
  	{
  		$q = \phpQuery::newDocument( $data );
@@ -128,10 +137,12 @@ use app\modules\grabber\exceptions\ContentNotFoundException;
  	public function getLinks( $data )
  	{
  		$q = \phpQuery::newDocument( $data );
- 		/**
- 		 */
+
  		$itemContainer = $q->find( 'div#allEntries' );
 
+ 		/**
+ 		 * Таких блоков должно быть ровно 1.
+ 		 */
  		if ( $itemContainer->count() !== 1 ) {
  			throw new LinksNotFoundException();
  		}
