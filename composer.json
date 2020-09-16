@@ -22,7 +22,8 @@
         "yiisoft/yii2-bootstrap4": "^2.0",
         "electrolinux/phpquery": "^0.9.6",
         "mihaildev/yii2-ckeditor": "*",
-        "bower-asset/font-awesome": "^5.14"
+        "bower-asset/font-awesome": "^5.14",
+        "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

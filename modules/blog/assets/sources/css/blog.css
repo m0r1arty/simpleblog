@@ -31,6 +31,11 @@ ol.breadcrumb li.middle
 	margin-right: 4px;
 }
 
+div.record.preview.footer
+{
+	background-color: #ffffff;
+}
+
 div.content.footer
 {
 	background-color: #ffffff;

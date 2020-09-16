@@ -73,7 +73,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                [ 'class' => 'app\modules\sef\Components\UrlRule' ],
+                [ 'class' => 'app\modules\sef\components\UrlRule' ],
             ],
         ],
     ],

@@ -138,4 +138,14 @@ class TaskInstances extends \yii\db\ActiveRecord implements \app\modules\blog\co
             return false;
         }, ARRAY_FILTER_USE_KEY );
     }
+
+    public function getParam( $name )
+    {
+        return $this->otherParams[ $name ] ?? NULL;
+    }
+
+    public function setParam( $name, $val )
+    {
+        $this->otherParams[ $name ] = $val;
+    }
 }

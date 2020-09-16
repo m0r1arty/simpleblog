@@ -71,7 +71,7 @@ class BlogController extends \app\modules\blog\components\Controller
         }
 
         $dataProviderConfig = [
-            'query' => Records::find()->with( 'user' )->with( 'categories' )->orderBy( [ 'record_id' => 'desc' ] ),
+            'query' => Records::find()->with( 'user' )->with( 'categories' )->orderBy( [ 'record_id' => SORT_DESC ] ),
             'pagination' =>
             [
                 'pageSize' => $this->recordsPerPage,

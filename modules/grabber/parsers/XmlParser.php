@@ -8,6 +8,7 @@ namespace app\modules\grabber\parsers;
 use Yii;
 
 use app\modules\grabber\base\BaseParser;
+use app\modules\grabber\exceptions\ContentNotFoundException;
 
 /**
  */
@@ -20,6 +21,22 @@ use app\modules\grabber\base\BaseParser;
 
  	public function parse( $data )
  	{
- 		//
+ 		$xml = @simplexml_load_string( $data );
+ 		
+ 		if ( $xml === false ) {
+ 			throw new ContentNotFoundException();
+ 		}
+
+ 		if ( !isset( $xml->title, $xml->preview, $xml->content ) ) {
+ 			throw new ContentNotFoundException();
+ 		}
+
+ 		$ret = [
+ 			'title' => strval( $xml->title ),
+ 			'preview' => strval( $xml->preview ),
+ 			'content' => strval( $xml->content ),
+ 		];
+ 		
+ 		return $ret;
  	}
  }

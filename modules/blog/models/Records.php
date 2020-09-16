@@ -93,7 +93,7 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
                     'class' => 'app\modules\sef\validators\UniqueSlugValidator',
                 ],
             ],
-            [
+            'userBehavior' => [
                 'class' => AttributeBehavior::className(),
                 'attributes' => [
                     \yii\db\ActiveRecord::EVENT_BEFORE_INSERT => 'user_id',
@@ -435,13 +435,6 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
         
         if ( !$insert ) {
             $this->parseCategoryIDs( $this->_oldCategoryIDs, $oldIDs );
-        }
-
-        /**
-         * Категории не менялись.
-         */
-        if ( empty( $oldIDs ) ) {
-            return;
         }
 
         /* @var int[] $ids идентификаторы категорий, назначенные после редактирования*/

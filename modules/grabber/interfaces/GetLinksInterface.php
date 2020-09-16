@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Файл содержит интерфейс NextSourceInterface.
+ * Файл содержит интерфейс GetLinksInterface.
  * @author M0r1arty <m0r1arty.nv@yandex.ru>
  */
 namespace app\modules\grabber\interfaces;

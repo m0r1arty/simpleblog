@@ -13,6 +13,17 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
         '@tests' => '@app/tests',
     ],
+    'modules' => [
+        'blog' => [
+            'class' => 'app\modules\blog\Module',
+        ],
+        'sef' => [
+            'class' => 'app\modules\sef\Module',
+        ],
+        'grabber' => [
+            'class' => 'app\modules\grabber\Module',
+        ],
+    ],
     'components' => [
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -23,6 +34,19 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
                 ],
+            ],
+        ],
+        'mailer' => [
+            'class' => 'yii\swiftmailer\Mailer',
+            'useFileTransport' => true,
+        ],
+        'urlManager' => [
+            'scriptUrl' => '',
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+            'baseUrl' => 'http://blog/',
+            'rules' => [
+                [ 'class' => 'app\modules\sef\components\UrlRule' ],
             ],
         ],
         'queue' => [
@@ -41,6 +65,11 @@ $config = [
     */
 ];
 
+$config['bootstrap'][] = 'blog';
+$config['bootstrap'][] = 'sef';
+$config['bootstrap'][] = 'grabber';
+$config[ 'bootstrap' ][] = 'queue';
+
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment
     $config['bootstrap'][] = 'gii';
@@ -53,7 +82,6 @@ if (YII_ENV_DEV) {
         	]
         ]
     ];
-    $config[ 'bootstrap' ][] = 'queue';
 }
 
 return $config;

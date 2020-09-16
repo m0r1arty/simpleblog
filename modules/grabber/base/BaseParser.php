@@ -10,7 +10,7 @@ use Yii;
 /**
  */
 
-abstract class BaseParser
+abstract class BaseParser extends BaseBehavior
 {
 	abstract public static function parserTitle();
 	abstract public function parse( $data );

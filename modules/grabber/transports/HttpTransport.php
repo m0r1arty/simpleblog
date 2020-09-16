@@ -20,6 +20,16 @@ use app\modules\grabber\base\BaseTransport;
 
  	public function getContent( $link = null )
  	{
- 		//
+ 		$client = new \GuzzleHttp\Client();
+
+ 		$response = $client->request( 'GET', $link );
+
+ 		$code = $response->getStatusCode();
+ 		
+ 		if ( $code !== 200 ) {
+ 			//throw
+ 		}
+
+ 		return $response->getBody();
  	}
  }
