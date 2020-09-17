@@ -33,6 +33,9 @@ $config = [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => '5dvq1Rie-92iMZFJmjOlInGcl7hSK1sy',
+            'parsers' => [
+                'application/json' => 'yii\web\JsonParser',
+            ],
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -52,7 +55,7 @@ $config = [
             // send all mails to a file by default. You have to set
             // 'useFileTransport' to false and configure a transport
             // for the mailer to send real emails.
-            'useFileTransport' => true,
+            'useFileTransport' => false,
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
@@ -74,6 +77,7 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 [ 'class' => 'app\modules\sef\components\UrlRule' ],
+                [ 'class' => 'yii\rest\UrlRule', 'controller' => 'records' ],
             ],
         ],
     ],

@@ -43,9 +43,8 @@ class UsersController extends Controller
 
         $model->password = md5($password);
 
-        $this->stdout("User \"" . $username . "\", Password: \"" . $password . "\"\n");
-
         if ($model->save()) {
+            $this->stdout( "User \"{$username}\", Password: \"{$password}\", Token: \"{$model->token}\"\n");
         	return ExitCode::OK;
         } else {
         	return ExitCode::OSERR;
