@@ -26,14 +26,6 @@ abstract class BaseTask extends BaseBehavior
 	 */
 	public $user_id = 1;
 	/**
-	 * @var array[string] $slugShorter конфигурация поведения SlugShorter для слишком длинных slug`ов
-	 */
-	public $slugShorter = [
-		'class' => 'app\modules\grabber\behaviors\SlugShorter',
-		'max' => 60, // если strlen( slug ) > max
-		'shortTo' => 57, // обрезать до 57 символов
-	];
-	/**
 	 *  @var bool $mailOnEnd отсылать ли письма администратору о награбленных записях
 	 */
 	public $mailOnEnd = true;
@@ -132,7 +124,6 @@ abstract class BaseTask extends BaseBehavior
  		 	* Отключить поведение, чтобы не лезло прописывать пользователя
  		 	*/
  			$model->detachBehavior( 'userBehavior' );
- 			$model->attachBehavior( 'slugshortBehavior', $this->slugShorter );
 
  			$model->attributes = $record;
  			$model->categoryIDs = $categoryIDs;

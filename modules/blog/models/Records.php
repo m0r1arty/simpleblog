@@ -89,6 +89,8 @@ class Records extends \yii\db\ActiveRecord implements \app\modules\sef\component
                 'ensureUnique' => true,
                 'sefAllowedScenarios' => [ self::SCENARIO_WEB ],
                 'sefShowErrorsInScenarios' => [ self::SCENARIO_WEB ],
+                'max' => 60,
+                'shortTo' => 57,
                 'uniqueValidator' => [
                     'class' => 'app\modules\sef\validators\UniqueSlugValidator',
                 ],

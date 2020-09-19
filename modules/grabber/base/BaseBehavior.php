@@ -15,5 +15,4 @@ use yii\base\Behavior;
  */
 class BaseBehavior extends Behavior
 {
-	public $owner;
 }

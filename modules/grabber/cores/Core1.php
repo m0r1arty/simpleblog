@@ -48,19 +48,16 @@ use \app\modules\grabber\models\TaskInstances;
  	{
  		$config = [
  			'class' => $task->task->class,
- 			'owner' => $task,
  		];
  		$task->attachBehavior( 'taskBehavior', $config );
 
  		$config = [
  			'class' => $task->transport->class,
- 			'owner' => $task,
  		];
  		$task->attachBehavior( 'transportBehavior', $config );
 
  		$config = [
  			'class' => $task->parser->class,
- 			'owner' => $task,
  		];
  		$task->attachBehavior( 'parserBehavior', $config );
 

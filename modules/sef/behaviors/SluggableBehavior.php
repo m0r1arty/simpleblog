@@ -25,6 +25,10 @@ class SluggableBehavior extends \yii\behaviors\SluggableBehavior
 	 * @var string[] массив названий сценариев для которых НЕ НУЖНО генерировать уникальный slug
 	 */
 	public $sefShowErrorsInScenarios = [];
+	/**
+	 */
+	public $max = 0;
+	public $shortTo = 0;
 
 	/**
 	 * {@inheritdoc}
@@ -71,10 +75,18 @@ class SluggableBehavior extends \yii\behaviors\SluggableBehavior
 	protected function generateSlug( $slugParts )
 	{
 		if ( !in_array( $this->owner->scenario, $this->sefAllowedScenarios ) || empty( $this->owner->attributes[ $this->slugAttribute ] ) ) {
-			return parent::generateSlug( $slugParts );
+			/* @var string $slug */
+			$slug = parent::generateSlug( $slugParts );
+		} else {
+			/* @var string $slug */
+			$slug = $this->owner->attributes[ $this->slugAttribute ];
 		}
 
-		return $this->owner->attributes[ $this->slugAttribute ];
+		if ( strlen( $slug ) >= $this->max ) {
+			$slug = substr( $slug, 0, $this->shortTo );
+		}
+
+		return $slug;
 	}
 
 	/**
