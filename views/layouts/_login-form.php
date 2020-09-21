@@ -42,9 +42,10 @@ echo $form->field( $loginModel, 'password', [
 	'template' => '{input}',
 ] )->passwordInput();
 
-echo '</div>';
-
-echo Html::beginTag( 'button', [ 'style' => 'display:none;' ] );
+echo Html::beginTag( 'button', [ 'style' => 'margin: 0 2px; border:transparent; border-radius: 5px;' ] );
+echo "Вход";
 echo Html::endTag( 'button' );
+
+echo '</div>';
 
 ActiveForm::end();
