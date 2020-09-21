@@ -74,8 +74,13 @@ $config = [
         'db' => $db,
         'urlManager' => [
             'enablePrettyUrl' => true,
+            'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
+                [ 'pattern' => '/', 'route' => 'blog/blog/index' ],
+                [ 'pattern' => 'default/signin', 'route' => 'default/signin' ],
+                [ 'pattern' => 'default/signout', 'route' => 'default/signout' ],
+                [ 'pattern' => 'default/error', 'route' => 'default/error' ],
                 [ 'class' => 'app\modules\sef\components\UrlRule' ],
                 [ 'class' => 'yii\rest\UrlRule', 'controller' => 'records' ],
             ],
