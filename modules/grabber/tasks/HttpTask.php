@@ -57,7 +57,38 @@ use app\modules\grabber\exceptions\RecordModelException;
 
  		while( true )
  		{
- 			$page = $transport->getContent( $linkSource );
+ 			try {
+ 				$page = $transport->getContent( $linkSource );
+ 			} catch ( ContentNotFoundException $e ) {
+ 				/**
+ 				 * Сообщить админу о кривой ссылке
+ 				 */
+ 				$stop = true;
+
+ 				if ( $this->mailOnErrors ) {
+ 					$params = [
+ 						'taskTitle' => $this->owner->task->title,
+ 						'source' => $this->owner->source,
+ 						'link' => $linkSource,
+ 					];
+ 						
+ 					Yii::$app->mailer->compose( 'errorContentTask', $params )
+ 					->setTo( Yii::$app->params[ 'adminEmail' ] )
+ 					->setFrom( Yii::$app->params[ 'senderEmail' ] )
+ 					->setSubject( $this->errorSubject )
+ 					->send();
+ 				}
+ 				break;
+ 			} catch ( \Exception $e ) {
+ 				$stop = true;
+ 				$this->handleUnknownError( $e, $linkSource );
+ 				break;
+ 			} catch( \Throwable $e )
+ 			{
+ 				$stop = true;
+ 				$this->handleUnknownError( $e, $linkSource );
+ 				break;
+ 			}
 
  			/**
  			 * Ссылка на след. страницу
@@ -208,5 +239,29 @@ use app\modules\grabber\exceptions\RecordModelException;
  		}
 
  		return $ret;
+ 	}
+
+ 	/**
+ 	 * Метод handleUnknownError обрабатываем ошибки, которые не ожидались
+ 	 */
+ 	protected function handleUnknownError( $e, $link )
+ 	{
+ 		if ( $this->mailOnErrors ) {
+ 			$params = [
+ 				'taskTitle' => $this->owner->task->title,
+ 				'source' => $this->owner->source,
+ 				'link' => $link,
+ 				'errMessage' => $e->getMessage(),
+ 				'errCode' => $e->getCode(),
+ 				'errFile' => $e->getFile(),
+ 				'errLine' => $e->getLine(),
+ 			];
+
+ 			Yii::$app->mailer->compose( 'errorUnknownTask', $params )
+ 			->setTo( Yii::$app->params[ 'adminEmail' ] )
+ 			->setFrom( Yii::$app->params[ 'senderEmail' ] )
+ 			->setSubject( $this->errorSubject )
+ 			->send();
+ 		}
  	}
  }
