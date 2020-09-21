@@ -95,7 +95,7 @@ use app\modules\grabber\exceptions\RecordModelException;
  				 * Если дошли до точки сохранения или сохранили максимум возможных при первом запуске записей
  				 */
  				if ( 
- 					( !is_null( $stopId ) && $id == $stopId ) ||
+ 					( !is_null( $stopId ) && $id <= $stopId ) ||
  					( is_null( $stopId ) && $countGrabbed === $this->maxRecords )
  				) {
  					/**
